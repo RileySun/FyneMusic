@@ -4,9 +4,12 @@ go 1.19
 
 replace github.com/RileySun/FynePod/player => ./player
 
+replace github.com/RileySun/FynePod/song => ./song
+
 require (
 	fyne.io/fyne/v2 v2.2.4
-	github.com/hajimehoshi/go-mp3 v0.3.4
+	github.com/RileySun/FynePod/player v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FynePod/song v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -22,6 +25,8 @@ require (
 	github.com/godbus/dbus/v5 v5.1.0 // indirect
 	github.com/goki/freetype v0.0.0-20181231101311-fa8a33aabaff // indirect
 	github.com/gopherjs/gopherjs v1.17.2 // indirect
+	github.com/hajimehoshi/go-mp3 v0.3.4 // indirect
+	github.com/hajimehoshi/oto/v2 v2.3.1 // indirect
 	github.com/jsummers/gobmp v0.0.0-20151104160322-e2ba15ffa76e // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20200311192757-870daf9aa564 // indirect
