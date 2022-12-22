@@ -21,7 +21,7 @@ func init() {
 
 func main() {
 	dir, _ := os.Getwd()
-	podcast = song.OpenSong(dir + "/Intro.mp3")
+	podcast = song.NewSong(dir + "/Intro.mp3")
 
 	app := app.New()
 	window := app.NewWindow("FynePod")
@@ -35,4 +35,3 @@ func main() {
 	window.CenterOnScreen()
 	window.ShowAndRun()
 }
-

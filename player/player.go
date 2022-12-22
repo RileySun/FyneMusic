@@ -1,14 +1,9 @@
 package player
 
 import (
-	"time"
-	"fmt"
-	"io"
-	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
-	//"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/theme"
 	
@@ -32,20 +27,15 @@ func Render(current song.Song) *fyne.Container {
 }
 
 func prev() {
-
+	podcast.Restart()
 }
 
 func rewind() {
-
+	podcast.Rewind()
 }
 
 func play() {
-	fmt.Println("Play")
-	podcast.Player.Play()
-	for podcast.Player.IsPlaying() {
-        time.Sleep(time.Millisecond)
-    }
-    _, _ = podcast.Player.(io.Seeker).Seek(0, io.SeekStart)
+	podcast.Play()
 }
 
 func pause() {
@@ -53,7 +43,7 @@ func pause() {
 }
 
 func forward() {
-
+	podcast.Forward()
 }
 
 func next() {

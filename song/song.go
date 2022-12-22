@@ -1,7 +1,9 @@
 package song
 
 import(
+	"io"
 	"os"
+	"time"
 	"strings"
 	
 	"github.com/hajimehoshi/go-mp3"
@@ -18,42 +20,77 @@ type Song struct {
 	Paused bool
 }
 
-func OpenSong(filepath string) Song {
-	var newSong Song
+//Constructor
+
+func NewSong(filepath string) Song {
+	var currentSong Song
 	
 	var fileErr error
-
+	
 	//Open File	
-	newSong.file, fileErr = os.Open(filepath)
+	currentSong.file, fileErr = os.Open(filepath)
 	
 	if fileErr != nil {
 		panic("Can't open file. Error: " + fileErr.Error())
 	}
 	
-	//defer newSong.file.Close()
+	//
 	
 	//Mp3-Decoder
-	decoder, decoderErr := mp3.NewDecoder(newSong.file)
+	decoder, decoderErr := mp3.NewDecoder(currentSong.file)
 	if decoderErr != nil {
 		panic("Can't decode file. Error: " + decoderErr.Error())
 	}
 	
-	newSong.decoder = decoder
+	currentSong.decoder = decoder
 	splitName := strings.Split(filepath, "/")
-	newSong.Name = splitName[len(splitName) - 1]
-	newSong.Length = newSong.decoder.Length()
-	newSong.Paused = true
+	currentSong.Name = splitName[len(splitName) - 1]
+	currentSong.Length = currentSong.decoder.Length()
+	currentSong.Paused = true
 	
 	
-	context, ready, contextError := oto.NewContext(newSong.decoder.SampleRate(), 2, 2)
+	context, ready, contextError := oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
 	if contextError != nil {
-		panic("Can't decode file. Error: " + contextError.Error())
+		panic("Can't create context. Error: " + contextError.Error())
 	}
 	
 	<-ready
 	
-	newSong.Player = context.NewPlayer(newSong.decoder)
-	//defer newSong.Player.Close()
+	currentSong.Player = context.NewPlayer(currentSong.decoder)
 	
-	return newSong
+	
+	return currentSong
+}
+
+//Actions
+func (s Song) Restart() {
+	 _, _ = s.Player.(io.Seeker).Seek(0, io.SeekStart)
+}
+
+func (s Song) Rewind() {
+	//I think this is 10 seconds reverse, no clue thou XD
+	_, _ = s.Player.(io.Seeker).Seek(-1000000, io.SeekCurrent)
+}
+
+func (s Song) Play() {
+	s.Player.Play()
+	for s.Player.IsPlaying() {
+        time.Sleep(time.Millisecond)
+    } 
+}
+
+func (s Song) Forward() {
+	_, _ = s.Player.(io.Seeker).Seek(1000000, io.SeekCurrent)
+}
+	
+func (s Song) Close() {
+	fileError := s.file.Close()
+	if fileError != nil {
+		panic("song.File.Close failed: " + fileError.Error())
+	}
+	
+	playerError := s.Player.Close()
+	if playerError != nil {
+		panic("song.Player.Close failed: " + playerError.Error())
+	}
 }
