@@ -13,21 +13,21 @@ import (
 	"github.com/RileySun/FynePod/song"
 )
 
-var podcast song.Song
+var podcast *song.Song
 
 func init() {
 	fmt.Println("FynePod")
+	dir, _ := os.Getwd()
+	podcast = song.NewSong(dir + "/Intro.mp3")	
+	player.StartPlayer(podcast)
 }
 
 func main() {
-	dir, _ := os.Getwd()
-	podcast = song.NewSong(dir + "/Intro.mp3")
-
 	app := app.New()
 	window := app.NewWindow("FynePod")
 	window.Resize(fyne.NewSize(400, 600))
 	
-	playerContainer := player.Render(podcast)
+	playerContainer := player.Render()
 	
 	content := container.New(layout.NewCenterLayout(), playerContainer)
 	
