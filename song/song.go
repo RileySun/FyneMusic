@@ -46,9 +46,13 @@ func NewSong(filepath string) *Song {
 	currentSong.decoder = decoder
 	splitName := strings.Split(filepath, "/")
 	currentSong.Name = splitName[len(splitName) - 1]
-	currentSong.Length = currentSong.decoder.Length()
+	
 	currentSong.Paused = true
 	currentSong.Current = 0
+	
+	//Get Song Duration
+	currentSong.Length = currentSong.IOtoSec(currentSong.decoder.Length())
+	
 	
 	//NewContext
 	context, ready, contextError := oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
@@ -97,7 +101,7 @@ func (s *Song) Restart() {
 }
 
 func (s *Song) Rewind() {
-	//If was paused, then pause
+	//If was playing, then pause
 	wasPaused := s.player.IsPlaying()
 	if wasPaused {
 		s.Pause()
@@ -138,6 +142,13 @@ func (s *Song) Pause() {
 	s.Paused = true
 }
 
+func (s *Song) Seek(newSeek int64) {
+	s.endUpdate()
+	newIO := newSeek * int64(s.decoder.SampleRate()) * 4 //Sample size is 4
+	_, _ = s.player.(io.Seeker).Seek(newIO, io.SeekStart)
+	s.startUpdate()
+}
+
 func (s *Song) Forward() {
 	//If was paused, then pause
 	wasPaused := s.player.IsPlaying()
@@ -173,4 +184,16 @@ func (s *Song) Close() {
 	if playerError != nil {
 		panic("song.Player.Close failed: " + playerError.Error())
 	}
+}
+
+//Utils
+func (s *Song) SectoIO(seconds int64) int64 {
+	const sampleSize = 4 
+	return seconds * int64(s.decoder.SampleRate()) * sampleSize
+}
+
+func (s *Song) IOtoSec(ioInt int64) int64 {
+	const sampleSize = 4 
+	samples := ioInt / sampleSize
+	return samples / int64(s.decoder.SampleRate())
 }
