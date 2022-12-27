@@ -29,6 +29,8 @@ var stopUpdating chan bool
 func NewSong(filepath string) *Song {
 	currentSong := new(Song)
 	
+	stopUpdating = make(chan bool, 100)
+	
 	var fileErr error
 	
 	//Open File	
