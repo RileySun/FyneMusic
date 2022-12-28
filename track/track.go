@@ -8,8 +8,6 @@ import(
 	"time"
 	"strconv"
 	
-	"fmt"
-	
 	"github.com/RileySun/FynePod/song"
 )
 
@@ -80,17 +78,20 @@ func NewTrackSliderWithData(min float64, max float64, data binding.Float) *Track
 func UpdateTime() {
 	go func() {
 		for {
-			fmt.Println(TimeUpdateDone)
 			select {
 				case <- TimeUpdateDone:
 					return
 				default:
-					timeStr.Set(strconv.Itoa(int(podcast.Current)))
-					sliderFloat.Set(float64(podcast.Current))
-					time.Sleep(time.Second)
+					SetTime()
+					time.Sleep(time.Second/2)
 	   		 }
 		}
 	}()
+} //runs SetTime every 0.5seconds until TimeUpdateDone is true
+
+func SetTime() {
+	timeStr.Set(strconv.Itoa(int(podcast.Current)))
+	sliderFloat.Set(float64(podcast.Current))
 }
 
 //Extra functions

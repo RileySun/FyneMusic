@@ -11,10 +11,11 @@ import (
 	
 	"github.com/RileySun/FynePod/song"
 	"github.com/RileySun/FynePod/track"
+	"github.com/RileySun/FynePod/playbutton"
 )
 
 var podcast *song.Song
-
+var playButton *playbutton.PlayButton
 
 //Init
 func StartPlayer(current *song.Song) {
@@ -29,11 +30,12 @@ func Render() *fyne.Container {
 	//Buttons
 	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {prev()})
 	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {rewind()})
-	playButton := widget.NewButtonWithIcon("Play", theme.MediaPlayIcon(), func() {play()})
-	//pauseButton := widget.NewButtonWithIcon("Pause", theme.MediaPauseIcon(), func() {pause()})
 	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {forward()})
 	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {next()})
 	
+	playButton = playbutton.NewPlayButton(podcast)
+	
+	//Containers
 	sliderContainer := container.New(layout.NewMaxLayout(), slider)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, playButton, forwardButton, nextButton)
 	playerContainer := container.New(layout.NewVBoxLayout(), sliderContainer, buttonContainer)
@@ -41,31 +43,29 @@ func Render() *fyne.Container {
 	return playerContainer
 }
 
-//Buttons
+//Util
+func UpdateWidgets() {
+	track.SetTime()
+	playButton.UpdateState()
+}
 
+//Buttons
 func prev() {
-	//sliderFloat.Set(0.0)
 	podcast.Restart()
+	UpdateWidgets()
 }
 
 func rewind() {
 	podcast.Rewind()
-	//sliderFloat.Set(float64(podcast.Current))
-}
-
-func play() {
-	podcast.Play()
-}
-
-func pause() {
-
+	UpdateWidgets()
 }
 
 func forward() {
 	podcast.Forward()
-	//sliderFloat.Set(float64(podcast.Current))
+	UpdateWidgets()
 }
 
 func next() {
-
+	track.SetTime()
+	UpdateWidgets()
 }
