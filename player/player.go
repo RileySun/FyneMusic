@@ -4,9 +4,12 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
+	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/theme"
 	
+	"bytes"
+	"os"
 	//"fmt"
 	
 	"github.com/RileySun/FynePod/song"
@@ -24,6 +27,9 @@ func StartPlayer(current *song.Song) {
 
 //Create
 func Render() *fyne.Container {
+	//Meta
+	artwork, title := CreateMeta()
+	
 	//Slider
 	slider := track.NewTrack(podcast)
 	
@@ -38,7 +44,7 @@ func Render() *fyne.Container {
 	//Containers
 	sliderContainer := container.New(layout.NewMaxLayout(), slider)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, playButton, forwardButton, nextButton)
-	playerContainer := container.New(layout.NewVBoxLayout(), sliderContainer, buttonContainer)
+	playerContainer := container.New(layout.NewVBoxLayout(), artwork, title, sliderContainer, buttonContainer)
 	
 	return playerContainer
 }
@@ -47,6 +53,34 @@ func Render() *fyne.Container {
 func UpdateWidgets() {
 	track.SetTime()
 	playButton.UpdateState()
+}
+
+func CreateMeta() (*canvas.Image, *widget.Label) {
+	var art *canvas.Image
+	
+	if len(podcast.Meta.Image) != 0 {
+		reader := bytes.NewReader(podcast.Meta.Image)
+		art = canvas.NewImageFromReader(reader, podcast.Meta.Title)
+	} else {
+		dir, _ := os.Getwd()
+		art = canvas.NewImageFromFile(dir + "/Default.jpg")
+	}
+	art.FillMode = canvas.ImageFillOriginal
+	
+	var titleString string
+	if podcast.Meta.Title != "" {
+		//Add Tag Title, and Artist if available
+		titleString = podcast.Meta.Title
+		if podcast.Meta.Artist != "" {
+			titleString += " - " + podcast.Meta.Artist
+		}
+	} else {
+		titleString = podcast.Meta.File
+	}
+	title := widget.NewLabel(titleString)
+	title.Alignment = 1
+	
+	return art, title
 }
 
 //Buttons

@@ -10,6 +10,7 @@ import(
 	
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
+	"github.com/RileySun/FynePod/meta"
 )
 
 type Song struct {
@@ -20,6 +21,7 @@ type Song struct {
 	Length int64			//Seek Length
 	Current int64			//Current Seek
 	Paused bool				//Is paused or not
+	Meta *meta.Meta		//All Available Metadata
 }
 
 var stopUpdating chan bool
@@ -27,17 +29,17 @@ var stopUpdating chan bool
 //Constructor
 
 func NewSong(filepath string) *Song {
+	//Song pointer
 	currentSong := new(Song)
 	
+	//Current Track Seek Update Channel
 	stopUpdating = make(chan bool, 100)
 	
-	var fileErr error
-	
 	//Open File	
-	currentSong.file, fileErr = os.Open(filepath)
-	if fileErr != nil {
-		panic("Can't open file. Error: " + fileErr.Error())
-	}
+	currentSong.file = OpenSongFile(filepath)
+	
+	//Get Metadata
+	currentSong.Meta = meta.Get(currentSong.file, filepath)
 	
 	//Mp3-Decoder
 	decoder, decoderErr := mp3.NewDecoder(currentSong.file)
@@ -71,6 +73,17 @@ func NewSong(filepath string) *Song {
 }
 
 //Utils
+func OpenSongFile(filepath string) *os.File {
+	file, fileErr := os.Open(filepath)
+	
+	if fileErr != nil {
+		panic("Can't open file. Error: " + fileErr.Error())
+	}
+	
+	return file
+}
+
+
 //Start updating seek
 func (s *Song) startUpdate() {
 	go func() {
