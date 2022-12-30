@@ -10,13 +10,13 @@ import (
 	
 	"bytes"
 	"os"
-	//"fmt"
 	
 	"github.com/RileySun/FynePod/song"
 	"github.com/RileySun/FynePod/track"
 	"github.com/RileySun/FynePod/playbutton"
 )
 
+//Declarations
 var podcast *song.Song
 var playButton *playbutton.PlayButton
 
@@ -26,7 +26,11 @@ func StartPlayer(current *song.Song) {
 }
 
 //Create
-func Render() *fyne.Container {
+func Render(menu func()) *fyne.Container {
+	//BackButton
+	backButton := widget.NewButtonWithIcon("", theme. MenuIcon(), func() {menu()})
+	backContainer := container.New(layout.NewHBoxLayout(), backButton)
+	
 	//Meta
 	artwork, title := CreateMeta()
 	
@@ -44,7 +48,7 @@ func Render() *fyne.Container {
 	//Containers
 	sliderContainer := container.New(layout.NewMaxLayout(), slider)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, playButton, forwardButton, nextButton)
-	playerContainer := container.New(layout.NewVBoxLayout(), artwork, title, sliderContainer, buttonContainer)
+	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, artwork, title, sliderContainer, buttonContainer)
 	
 	return playerContainer
 }
