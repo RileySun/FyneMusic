@@ -14,10 +14,13 @@ replace github.com/RileySun/FynePod/track => ./track
 
 replace github.com/RileySun/FynePod/playbutton => ./playbutton
 
+replace github.com/RileySun/FynePod/settings => ./settings
+
 require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/RileySun/FynePod/player v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FynePod/playlist v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FynePod/settings v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FynePod/song v0.0.0-00010101000000-000000000000
 )
 

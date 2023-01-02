@@ -1,7 +1,6 @@
 package main
 
 import (
-	"os"
 	"fmt"
 
 	"fyne.io/fyne/v2"
@@ -12,18 +11,21 @@ import (
 	"github.com/RileySun/FynePod/playlist"
 	"github.com/RileySun/FynePod/player"
 	"github.com/RileySun/FynePod/song"
+	"github.com/RileySun/FynePod/settings"
 )
 
 var playList *playlist.Playlist
+var config *settings.Config
 var podcast *song.Song
 var window fyne.Window
 
 //Init
 func init() {
 	fmt.Println("FynePod")
-	dir, _ := os.Getwd()
 	
-	playList = playlist.NewPlaylist(dir + "/Music")
+	config = settings.GetSettings()
+	
+	playList = playlist.NewPlaylist(config.Dir)
 	playList.Select = func(id int64) {selectSong(id)}
 }
 
@@ -33,12 +35,18 @@ func main() {
 	window = app.NewWindow("FynePod")
 	window.Resize(fyne.NewSize(400, 600))
 	
+	//Settings window
+	settings.ParentWindow = window
+	
 	list := playList.Render()
 	list.Resize(fyne.NewSize(400, 600))
 	
 	content := list
 	
 	window.SetContent(content)
+	
+	openSettings()
+	
 	window.CenterOnScreen()
 	window.ShowAndRun()
 }
@@ -68,4 +76,9 @@ func returnToMenu() {
 	list := playList.Render()
 	list.Resize(fyne.NewSize(400, 600))
 	window.SetContent(list)
+}
+
+func openSettings() {
+	settingsPage := settings.Render()
+	window.SetContent(settingsPage)
 }
