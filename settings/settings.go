@@ -20,20 +20,30 @@ type Config struct {
 
 var ParentWindow fyne.Window
 var config *Config
-var dirLabel *widget.Label
+var dirLocation *widget.Entry
 
 func Render() *fyne.Container {
-	dirLabel = widget.NewLabel(config.Dir)
-	button := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), func() {selectMusicDir()})
-	dirContainer := container.New(layout.NewHBoxLayout(), dirLabel, button)
+	spacer := layout.NewSpacer()
 	
+	//Music Dir
+	dirLabel := widget.NewLabel("Music Directory")
+	dirLabel.Alignment = 1 //Center
+	dirLocation = widget.NewEntry()
+	dirLocation.Text = config.Dir
+	button := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), func() {selectMusicDir()})
+	dirRow := container.NewBorder(nil, nil, nil, button, dirLocation)
+	dirContainer := container.New(layout.NewVBoxLayout(), dirLabel, dirRow)
+	
+	//Master Volume
+	volumeLabel := widget.NewLabel("Master Volume")
+	volumeLabel.Alignment = 1 //Center
 	volume := widget.NewSlider(0, 100)
 	volume.OnChanged = func(v float64) {changeVolume(v)}
 	volume.Value = config.Volume
 	
 	saveButton := widget.NewButtonWithIcon("Save", theme.DocumentSaveIcon(), func() {saveConfig()})
 	
-	settingsContainer := container.New(layout.NewVBoxLayout(), dirContainer, volume, saveButton)
+	settingsContainer := container.New(layout.NewVBoxLayout(), spacer, dirContainer, volumeLabel, volume, spacer, saveButton)
 	
 	return settingsContainer
 }
@@ -81,8 +91,8 @@ func selectMusicDir () {
 func onSelectedDir(folder fyne.ListableURI, err error) {
 	if folder != nil {
 		config.Dir = folder.Path()
-		dirLabel.SetText(config.Dir)
-		dirLabel.Refresh()
+		dirLocation.Text = config.Dir
+		dirLocation.Refresh()
 	}
 }
 

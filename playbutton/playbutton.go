@@ -29,16 +29,18 @@ func NewPlayButton(current *song.Song) *PlayButton {
 
 //Actions
 func (b *PlayButton) ChangeState() {
-	if b.podcast.Paused {
-		b.podcast.Play()
-		b.Icon = theme.MediaPauseIcon()
-		b.Text = "Pause"
-		b.Refresh()
-	} else {
-		b.podcast.Pause()
-		b.Icon = theme.MediaPlayIcon()
-		b.Text = "Play"
-		b.Refresh()
+	if b.podcast != nil {
+		if b.podcast.Paused {
+			b.podcast.Play()
+			b.Icon = theme.MediaPauseIcon()
+			b.Text = "Pause"
+			b.Refresh()
+		} else {
+			b.podcast.Pause()
+			b.Icon = theme.MediaPlayIcon()
+			b.Text = "Play"
+			b.Refresh()
+		}
 	}
 }
 

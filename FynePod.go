@@ -5,8 +5,6 @@ import (
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
-	"fyne.io/fyne/v2/container"
-	"fyne.io/fyne/v2/layout"
 	
 	"github.com/RileySun/FynePod/playlist"
 	"github.com/RileySun/FynePod/player"
@@ -27,13 +25,13 @@ func init() {
 	
 	playList = playlist.NewPlaylist(config.Dir)
 	playList.Select = func(id int64) {selectSong(id)}
+	playList.Settings = func() {openSettings()}
 }
 
 //Main
 func main() {
 	app := app.New()
 	window = app.NewWindow("FynePod")
-	window.Resize(fyne.NewSize(400, 600))
 	
 	//Settings window
 	settings.ParentWindow = window
@@ -45,9 +43,10 @@ func main() {
 	
 	window.SetContent(content)
 	
-	openSettings()
-	
 	window.CenterOnScreen()
+	
+	window.Resize(fyne.NewSize(400, 600))
+	
 	window.ShowAndRun()
 }
 
@@ -64,8 +63,7 @@ func selectSong(index int64) {
 	player.StartPlayer(podcast)
 
 	playerContainer := player.Render(returnToMenu)
-	content := container.New(layout.NewCenterLayout(), playerContainer)
-	window.SetContent(container.New(layout.NewCenterLayout(), content))
+	window.SetContent(playerContainer)
 	
 	//Play
 	podcast.Play()

@@ -3,13 +3,17 @@ package playlist
 import(
 	"os"
 	"strings"
+	"image/color"
 	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
+	"fyne.io/fyne/v2/canvas"
+	"fyne.io/fyne/v2/theme"
 	
 	"github.com/RileySun/FynePod/meta"
+	"github.com/RileySun/FynePod/player"
 )
 
 //Struct
@@ -19,6 +23,7 @@ type Playlist struct {
 	Index int64
 	Length int64 //-1 for 0 index, 0 if only one song
 	Select func(int64)
+	Settings func()
 }
 
 //Create
@@ -73,6 +78,16 @@ func getSongs(dirPath string) ([]string, []*meta.Meta) {
 
 //Actions
 func (p *Playlist) Render() *fyne.Container {
+	//Top Area (Logo, and Settings Button)
+	logo := widget.NewLabel("Fyne Pod")
+	space := layout.NewSpacer()
+	settingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {p.Settings()})
+	topHBox := container.New(layout.NewHBoxLayout(), logo, space, settingsButton)
+	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
+	topBorder.StrokeWidth = 2
+	topContainer := container.NewBorder(nil, topBorder, nil, nil, topHBox)
+	
+	//Song List
 	list := widget.NewList(
 		func() int {
 			return len(p.Songs)
@@ -89,8 +104,15 @@ func (p *Playlist) Render() *fyne.Container {
 		},
 	)
 	list.OnSelected = func(id widget.ListItemID) {p.OnSelect(id)}
+	listContainer := container.New(layout.NewMaxLayout(), list)
 	
-	return container.New(layout.NewMaxLayout(), list)
+	//Space between List and mini player
+	empty := layout.NewSpacer()
+	
+	//Mini Player
+	mini := player.RenderMini()
+	
+	return container.New(layout.NewVBoxLayout(), topContainer, listContainer, empty, mini)
 }
 
 func (p *Playlist) OnSelect(id widget.ListItemID) {
