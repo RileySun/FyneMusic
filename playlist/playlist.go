@@ -24,11 +24,14 @@ type Playlist struct {
 	Length int64 //-1 for 0 index, 0 if only one song
 	Select func(int64)
 	Settings func()
+	Player *player.Player
 }
 
 //Create
-func NewPlaylist(dirPath string) *Playlist {
+func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 	playlist := new(Playlist)
+	
+	playlist.Player = playerObj
 	
 	playlist.Songs, playlist.Meta = getSongs(dirPath)
 	playlist.Index = 0
@@ -110,7 +113,7 @@ func (p *Playlist) Render() *fyne.Container {
 	empty := layout.NewSpacer()
 	
 	//Mini Player
-	mini := player.RenderMini()
+	mini := p.Player.RenderMini()
 	
 	return container.New(layout.NewVBoxLayout(), topContainer, listContainer, empty, mini)
 }

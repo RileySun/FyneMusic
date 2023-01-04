@@ -12,9 +12,9 @@ import (
 	"github.com/RileySun/FynePod/settings"
 )
 
-var playList *playlist.Playlist
 var config *settings.Config
-var podcast *song.Song
+var playList *playlist.Playlist
+var playerObj *player.Player
 var window fyne.Window
 
 //Init
@@ -23,7 +23,12 @@ func init() {
 	
 	config = settings.GetSettings()
 	
-	playList = playlist.NewPlaylist(config.Dir)
+	//Player Module (needed for Playlist, must come first)
+	playerObj = player.NewPlayer()
+	playerObj.ReturnToMenu = func() {returnToMenu()}
+	
+	//Playlist Module
+	playList = playlist.NewPlaylist(config.Dir, playerObj)
 	playList.Select = func(id int64) {selectSong(id)}
 	playList.Settings = func() {openSettings()}
 }
@@ -51,28 +56,37 @@ func main() {
 }
 
 //Change Tabs
-func selectSong(index int64) {
-	//Close old song, if there is one
-	if podcast != nil {
-		podcast.Close()
+func selectSong(index int64) {	
+	//If there is a song already (close old, or if same open player)
+	if playerObj.Song != nil {
+		//If selecting same song, open player, if not, close song
+		if (playerObj.Song.Path == playList.Songs[index]) {
+			playerContainer := playerObj.Render()
+			window.SetContent(playerContainer)
+			playerObj.UpdateWidgets()
+			return
+		} else {
+			playerObj.Song.Close()
+		}
 	}
 	
-	//Get New Song from playlist
+	//Get New Song from playlist, assign to player
 	selected := playList.Songs[index]
-	podcast = song.NewSong(selected)	
-	player.StartPlayer(podcast)
+	playerObj.Song = song.NewSong(selected)
 
-	playerContainer := player.Render(returnToMenu)
+	//Render Player
+	playerContainer := playerObj.Render()
 	window.SetContent(playerContainer)
 	
-	//Play
-	podcast.Play()
-	player.UpdateWidgets()
+	//Play Selected Song
+	playerObj.Song.Play()
+	playerObj.UpdateWidgets()
 }
 
 func returnToMenu() {
 	list := playList.Render()
 	list.Resize(fyne.NewSize(400, 600))
+	playerObj.UpdateWidgets()
 	window.SetContent(list)
 }
 

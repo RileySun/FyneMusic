@@ -10,7 +10,7 @@ import(
 //Struct with extra functions
 type PlayButton struct {
 	widget.Button
-	podcast *song.Song
+	Song *song.Song
 }
 
 //Global
@@ -19,7 +19,7 @@ type PlayButton struct {
 func NewPlayButton(current *song.Song) *PlayButton {
 	button := &PlayButton{}
 	button.ExtendBaseWidget(button)
-	button.podcast = current
+	button.Song = current
 	button.Icon = theme.MediaPlayIcon()
 	button.Text = "Play"
 	button.OnTapped = func() {button.ChangeState()}
@@ -29,14 +29,14 @@ func NewPlayButton(current *song.Song) *PlayButton {
 
 //Actions
 func (b *PlayButton) ChangeState() {
-	if b.podcast != nil {
-		if b.podcast.Paused {
-			b.podcast.Play()
+	if b.Song != nil {
+		if b.Song.Paused {
+			b.Song.Play()
 			b.Icon = theme.MediaPauseIcon()
 			b.Text = "Pause"
 			b.Refresh()
 		} else {
-			b.podcast.Pause()
+			b.Song.Pause()
 			b.Icon = theme.MediaPlayIcon()
 			b.Text = "Play"
 			b.Refresh()
@@ -45,7 +45,7 @@ func (b *PlayButton) ChangeState() {
 }
 
 func (b *PlayButton) UpdateState() {
-	if b.podcast.Paused {
+	if b.Song.Paused {
 		b.Icon = theme.MediaPlayIcon()
 		b.Text = "Play"
 		b.Refresh()

@@ -6,8 +6,6 @@ import(
 	"time"
 	"strings"
 	
-	//"fmt"
-	
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 	"github.com/RileySun/FynePod/meta"
@@ -17,11 +15,12 @@ type Song struct {
 	file *os.File			//File refrence
 	decoder *mp3.Decoder	//MP3 Decoder
 	player oto.Player		//Oto Player
+	Path string				//Filepath
 	Name string				//File Name
 	Length int64			//Seek Length
 	Current int64			//Current Seek
 	Paused bool				//Is paused or not
-	Meta *meta.Meta		//All Available Metadata
+	Meta *meta.Meta			//All Available Metadata
 }
 
 var stopUpdating chan bool
@@ -34,6 +33,9 @@ func NewSong(filepath string) *Song {
 	
 	//Current Track Seek Update Channel
 	stopUpdating = make(chan bool, 100)
+	
+	//Set file Path
+	currentSong.Path = filepath
 	
 	//Open File	
 	currentSong.file = OpenSongFile(filepath)

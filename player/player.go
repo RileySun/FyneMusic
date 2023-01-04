@@ -16,19 +16,28 @@ import (
 	"github.com/RileySun/FynePod/playbutton"
 )
 
+
+type Player struct {
+	Song *song.Song
+	PlayButton *playbutton.PlayButton
+	ReturnToMenu func()
+}
+
 //Declarations
 var podcast *song.Song
 var playButton *playbutton.PlayButton
 
-//Init
-func StartPlayer(current *song.Song) {
-	podcast = current
+//Create
+func NewPlayer() *Player {
+	player := new(Player)
+	
+	return player
 }
 
-//Create
-func Render(menu func()) *fyne.Container {
+//Render
+func (p *Player) Render() *fyne.Container {
 	//BackButton
-	backButton := widget.NewButtonWithIcon("", theme. MenuIcon(), func() {menu()})
+	backButton := widget.NewButtonWithIcon("", theme. MenuIcon(), func() {p.ReturnToMenu()})
 	backSpacer := layout.NewSpacer()
 	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, backButton)
 	
@@ -37,50 +46,50 @@ func Render(menu func()) *fyne.Container {
 	spacerBottom := layout.NewSpacer()
 	
 	//Meta
-	artwork, title := CreateMeta()
+	artwork, title := p.CreateMeta()
 	
 	//Slider
-	slider := track.NewTrack(podcast)
+	slider := track.NewTrack(p.Song)
 	
 	//Buttons
-	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {forward()})
-	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {next()})
-	playButton = playbutton.NewPlayButton(podcast)
+	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {p.Next()})
+	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	
 	//Containers
 	sliderContainer := container.New(layout.NewMaxLayout(), slider)
-	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, playButton, forwardButton, nextButton)
+	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, spacerTop, artwork, spacerBottom, title, sliderContainer, buttonContainer)
 	
 	return playerContainer
 }
 
-func RenderMini() *fyne.Container {
-	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {forward()})
-	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {next()})
+func (p *Player) RenderMini() *fyne.Container {
+	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {p.Next()})
 	
-	playButton = playbutton.NewPlayButton(podcast)
-	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, playButton, forwardButton, nextButton)
+	p.PlayButton = playbutton.NewPlayButton(p.Song)
+	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	
 	return buttonContainer
 }
 
-//Util
-func UpdateWidgets() {
+//Utils
+func (p *Player) UpdateWidgets() {
 	track.SetTime()
-	playButton.UpdateState()
+	p.PlayButton.UpdateState()
 }
 
-func CreateMeta() (*fyne.Container, *widget.Label) {
+func (p *Player) CreateMeta() (*fyne.Container, *widget.Label) {
 	var art *canvas.Image
 	
-	if len(podcast.Meta.Image) != 0 {
-		reader := bytes.NewReader(podcast.Meta.Image)
-		art = canvas.NewImageFromReader(reader, podcast.Meta.Title)
+	if len(p.Song.Meta.Image) != 0 {
+		reader := bytes.NewReader(p.Song.Meta.Image)
+		art = canvas.NewImageFromReader(reader, p.Song.Meta.Title)
 	} else {
 		dir, _ := os.Getwd()
 		art = canvas.NewImageFromFile(dir + "/Default.jpg")
@@ -89,14 +98,14 @@ func CreateMeta() (*fyne.Container, *widget.Label) {
 	artContainer := container.New(layout.NewMaxLayout(), art)
 	
 	var titleString string
-	if podcast.Meta.Title != "" {
+	if p.Song.Meta.Title != "" {
 		//Add Tag Title, and Artist if available
-		titleString = podcast.Meta.Title
-		if podcast.Meta.Artist != "" {
-			titleString += " - " + podcast.Meta.Artist
+		titleString = p.Song.Meta.Title
+		if p.Song.Meta.Artist != "" {
+			titleString += " - " + p.Song.Meta.Artist
 		}
 	} else {
-		titleString = podcast.Meta.File
+		titleString = p.Song.Meta.File
 	}
 	title := widget.NewLabel(titleString)
 	title.Alignment = 1
@@ -105,30 +114,30 @@ func CreateMeta() (*fyne.Container, *widget.Label) {
 }
 
 //Buttons
-func prev() {
-	if podcast != nil {
-		podcast.Restart()
-		UpdateWidgets()
+func (p *Player) Prev() {
+	if p.Song != nil {
+		p.Song.Restart()
+		p.UpdateWidgets()
 	}
 }
 
-func rewind() {
-	if podcast != nil {
-		podcast.Rewind()
-		UpdateWidgets()
+func (p *Player) Rewind() {
+	if p.Song != nil {
+		p.Song.Rewind()
+		p.UpdateWidgets()
 	}
 }
 
-func forward() {
-	if podcast != nil {
-		podcast.Forward()
-		UpdateWidgets()
+func (p *Player) Forward() {
+	if p.Song != nil {
+		p.Song.Forward()
+		p.UpdateWidgets()
 	}
 }
 
-func next() {
-	if podcast != nil {
+func (p *Player) Next() {
+	if p.Song != nil {
 		track.SetTime()
-		UpdateWidgets()
+		p.UpdateWidgets()
 	}
 }
