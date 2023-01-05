@@ -14,7 +14,7 @@ import(
 type Song struct {
 	file *os.File			//File refrence
 	decoder *mp3.Decoder	//MP3 Decoder
-	player oto.Player		//Oto Player
+	Player oto.Player		//Oto Player
 	Path string				//Filepath
 	Name string				//File Name
 	Length int64			//Seek Length
@@ -69,7 +69,7 @@ func NewSong(filepath string) *Song {
 	<-ready //context ready channel
 	
 	//New Player
-	currentSong.player = context.NewPlayer(currentSong.decoder)
+	currentSong.Player = context.NewPlayer(currentSong.decoder)
 	
 	return currentSong
 }
@@ -94,7 +94,7 @@ func (s *Song) startUpdate() {
 				case <- stopUpdating:
 					return
 				default:
-					if !s.player.IsPlaying() {
+					if !s.Player.IsPlaying() {
 						return
 					}
 					s.Current += 1
@@ -110,28 +110,28 @@ func (s *Song) endUpdate() {
 
 //Actions
 func (s *Song) Restart() {
-	_, _ = s.player.(io.Seeker).Seek(0, io.SeekStart)
+	_, _ = s.Player.(io.Seeker).Seek(0, io.SeekStart)
 	s.Current = 0
-	if !s.player.IsPlaying() {
+	if !s.Player.IsPlaying() {
 		s.Play()
 	}
 }
 
 func (s *Song) Rewind() {
 	//If was playing, then pause
-	wasPaused := s.player.IsPlaying()
+	wasPaused := s.Player.IsPlaying()
 	if wasPaused {
 		s.Pause()
 	}
 	
 	//if current seek is less than 10 seconds, then restart song
-	currentSeek, _ := s.player.(io.Seeker).Seek(0, io.SeekCurrent)
+	currentSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekCurrent)
 	
 	if currentSeek > 1000000 {
-		_, _ = s.player.(io.Seeker).Seek(-1000000, io.SeekCurrent)
+		_, _ = s.Player.(io.Seeker).Seek(-1000000, io.SeekCurrent)
 		s.Current -= 10
 	} else {
-		_, _ = s.player.(io.Seeker).Seek(0, io.SeekStart)
+		_, _ = s.Player.(io.Seeker).Seek(0, io.SeekStart)
 		s.Current = 0
 	}
 	
@@ -143,7 +143,7 @@ func (s *Song) Rewind() {
 }
 
 func (s *Song) Play() {
-	s.player.Play()
+	s.Player.Play()
 	s.startUpdate()
 	s.Paused = false
 	/*
@@ -154,7 +154,7 @@ func (s *Song) Play() {
 }
 
 func (s *Song) Pause() {
-	s.player.Pause()
+	s.Player.Pause()
 	s.endUpdate()
 	s.Paused = true
 }
@@ -162,26 +162,26 @@ func (s *Song) Pause() {
 func (s *Song) Seek(newSeek int64) {
 	s.endUpdate()
 	newIO := newSeek * int64(s.decoder.SampleRate()) * 4 //Sample size is 4
-	_, _ = s.player.(io.Seeker).Seek(newIO, io.SeekStart)
+	_, _ = s.Player.(io.Seeker).Seek(newIO, io.SeekStart)
 	s.startUpdate()
 }
 
 func (s *Song) Forward() {
 	//If was paused, then pause
-	wasPaused := s.player.IsPlaying()
+	wasPaused := s.Player.IsPlaying()
 	if wasPaused {
 		s.Pause()
 	}
 	
 	//if current seek is less than 10 seconds from end, then end song
-	currentSeek, _ := s.player.(io.Seeker).Seek(0, io.SeekCurrent)
-	finalSeek, _ := s.player.(io.Seeker).Seek(0, io.SeekEnd)
+	currentSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekCurrent)
+	finalSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekEnd)
 	
 	if currentSeek < finalSeek {
-		_, _ = s.player.(io.Seeker).Seek(1000000, io.SeekCurrent)
+		_, _ = s.Player.(io.Seeker).Seek(1000000, io.SeekCurrent)
 		s.Current += 10
 	} else {
-		_, _ = s.player.(io.Seeker).Seek(0, io.SeekEnd)
+		_, _ = s.Player.(io.Seeker).Seek(0, io.SeekEnd)
 		s.Current = 0
 	}
 	
@@ -197,7 +197,7 @@ func (s *Song) Close() {
 		panic("song.File.Close failed: " + fileError.Error())
 	}
 	
-	playerError := s.player.Close()
+	playerError := s.Player.Close()
 	if playerError != nil {
 		panic("song.Player.Close failed: " + playerError.Error())
 	}

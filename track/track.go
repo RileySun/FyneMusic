@@ -14,6 +14,13 @@ import(
 //Struct with extra functions
 type TrackSlider struct {
 	widget.Slider
+	
+	Song *song.Song
+	
+	TimeUpdateDone chan bool
+	TimeStr binding.String
+	MaxTimeStr binding.String
+	SliderFloat binding.Float
 }
 
 //Channels
@@ -26,29 +33,33 @@ var sliderFloat binding.Float
 var slider *TrackSlider
 
 //Global
-var podcast *song.Song
 
 //Create
 func NewTrack(current *song.Song) *TrackSlider {
-	podcast = current
+
+	slider = NewTrackSlider(0, float64(current.Length))
 	
-	timeStr = binding.NewString()
-	timeStr.Set(strconv.Itoa(int(podcast.Current)))
+	//Set Song
+	slider.Song = current
 	
-	maxTimeStr = binding.NewString()
-	maxTimeStr.Set(strconv.Itoa(int(podcast.Length)))
+	//Channel
+	slider.TimeUpdateDone = make(chan bool, 100)
 	
-	sliderFloat = binding.NewFloat()
-	sliderFloat.Set(float64(podcast.Current))
+	//Current Time
+	slider.TimeStr = binding.NewString()
+	slider.TimeStr.Set(strconv.Itoa(int(slider.Song.Current)))
 	
-	TimeUpdateDone = make(chan bool, 100)
+	//Max Time
+	slider.MaxTimeStr = binding.NewString()
+	slider.MaxTimeStr.Set(strconv.Itoa(int(slider.Song.Length)))
 	
-	//currentTime = widget.NewLabelWithData(timeStr)
-	//maxTime = widget.NewLabelWithData(maxTimeStr)
+	//Float Current Time
+	slider.SliderFloat = binding.NewFloat()
+	slider.SliderFloat.Set(float64(slider.Song.Current))
 	
-	slider = NewTrackSliderWithData(0, float64(podcast.Length), sliderFloat)
+	slider.Bind(slider.SliderFloat)
 	
-	UpdateTime()
+	slider.UpdateTime()
 	
 	return slider
 }
@@ -63,44 +74,47 @@ func NewTrackSlider(min float64, max float64) *TrackSlider {
 	return track
 }
 
-func NewTrackSliderWithData(min float64, max float64, data binding.Float) *TrackSlider {
-	track := &TrackSlider{}
-	track.ExtendBaseWidget(track)
-	track.Min = min
-	track.Max = max
-	track.Step = 1
-	track.Bind(data)
-
-	return track
-}
-
 //Util
-func UpdateTime() {
+func (t *TrackSlider) UpdateTime() {
 	go func() {
 		for {
 			select {
-				case <- TimeUpdateDone:
+				case <- t.TimeUpdateDone:
 					return
 				default:
-					SetTime()
+					t.SetTime()
 					time.Sleep(time.Second/2)
 	   		 }
 		}
 	}()
 } //runs SetTime every 0.5seconds until TimeUpdateDone is true
 
-func SetTime() {
-	timeStr.Set(strconv.Itoa(int(podcast.Current)))
-	sliderFloat.Set(float64(podcast.Current))
+func (t *TrackSlider) SetTime() {
+	t.TimeStr.Set(strconv.Itoa(int(t.Song.Current)))
+	t.SliderFloat.Set(float64(t.Song.Current))
 }
 
 //Extra functions
-func (s *TrackSlider) Dragged(e *fyne.DragEvent) {
-	TimeUpdateDone <- true
-	s.Slider.Dragged(e)
+func (t *TrackSlider) Dragged(e *fyne.DragEvent) {
+	wasPlaying := t.Song.Player.IsPlaying()
+	if wasPlaying {
+		t.TimeUpdateDone <- true
+		t.Song.Pause()
+	}
+	
+	t.Slider.Dragged(e)
+	
+	t.Song.Seek(int64(t.Value))
+	t.Song.Current = int64(t.Value)
+	t.SliderFloat.Set(float64(t.Value))
+	
+	if wasPlaying {
+		t.Song.Play()
+		t.UpdateTime()
+	}
 }
 
-func (s *TrackSlider) DragEnd() {
-	podcast.Seek(int64(s.Value))
-	UpdateTime()
+func (t *TrackSlider) DragEnd() {
+	
+	//t.UpdateTime()
 }

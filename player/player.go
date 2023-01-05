@@ -26,6 +26,7 @@ type Player struct {
 //Declarations
 var podcast *song.Song
 var playButton *playbutton.PlayButton
+var slider *track.TrackSlider
 
 //Create
 func NewPlayer() *Player {
@@ -49,7 +50,7 @@ func (p *Player) Render() *fyne.Container {
 	artwork, title := p.CreateMeta()
 	
 	//Slider
-	slider := track.NewTrack(p.Song)
+	slider = track.NewTrack(p.Song)
 	
 	//Buttons
 	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
@@ -80,7 +81,7 @@ func (p *Player) RenderMini() *fyne.Container {
 
 //Utils
 func (p *Player) UpdateWidgets() {
-	track.SetTime()
+	slider.SetTime()
 	p.PlayButton.UpdateState()
 }
 
@@ -137,7 +138,7 @@ func (p *Player) Forward() {
 
 func (p *Player) Next() {
 	if p.Song != nil {
-		track.SetTime()
+		slider.SetTime()
 		p.UpdateWidgets()
 	}
 }
