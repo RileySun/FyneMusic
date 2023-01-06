@@ -60,7 +60,7 @@ func selectSong(index int64) {
 	//If there is a song already (close old, or if same open player)
 	if playerObj.Song != nil {
 		//If selecting same song, open player, if not, close song
-		if (playerObj.Song.Path == playList.Songs[index]) {
+		if (playerObj.Song.Path == playList.Songs[index].Path) {
 			playerContainer := playerObj.Render()
 			window.SetContent(playerContainer)
 			playerObj.UpdateWidgets()
@@ -71,7 +71,7 @@ func selectSong(index int64) {
 	}
 	
 	//Get New Song from playlist, assign to player
-	selected := playList.Songs[index]
+	selected := playList.Songs[index].Path
 	playerObj.Song = song.NewSong(selected)
 
 	//Render Player
