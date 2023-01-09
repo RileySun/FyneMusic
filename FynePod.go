@@ -6,8 +6,8 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	
-	"github.com/RileySun/FynePod/playlist"
 	"github.com/RileySun/FynePod/player"
+	"github.com/RileySun/FynePod/playlist"
 	"github.com/RileySun/FynePod/song"
 	"github.com/RileySun/FynePod/settings"
 )
@@ -66,13 +66,17 @@ func selectSong(index int64) {
 			playerObj.UpdateWidgets()
 			return
 		} else {
-			playerObj.Song.Close()
+			playerObj.Close()
 		}
 	}
 	
-	//Get New Song from playlist, assign to player
-	selected := playList.Songs[index].Path
-	playerObj.Song = song.NewSong(selected)
+	//Get New Queue based off selected song (index)
+	playerObj.NewQueue(playList.PlaylistPaths(), index)
+	if playerObj.Queue == nil {
+		panic("Queue Error")
+	}
+	
+	playerObj.Song = song.NewSong(playerObj.Queue.Songs[playerObj.Queue.Index])
 
 	//Render Player
 	playerContainer := playerObj.Render()

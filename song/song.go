@@ -41,7 +41,7 @@ func NewSong(filepath string) *Song {
 	currentSong.file = OpenSongFile(filepath)
 	
 	//Get Metadata
-	currentSong.Meta = meta.Get(currentSong.file, filepath)
+	currentSong.Meta = meta.Get(filepath)
 	
 	//Mp3-Decoder
 	decoder, decoderErr := mp3.NewDecoder(currentSong.file)
@@ -58,7 +58,6 @@ func NewSong(filepath string) *Song {
 	
 	//Get Song Duration
 	currentSong.Length = currentSong.IOtoSec(currentSong.decoder.Length())
-	
 	
 	//NewContext
 	context, ready, contextError := oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
@@ -84,7 +83,6 @@ func OpenSongFile(filepath string) *os.File {
 	
 	return file
 }
-
 
 //Start updating seek
 func (s *Song) startUpdate() {
@@ -146,11 +144,6 @@ func (s *Song) Play() {
 	s.Player.Play()
 	s.startUpdate()
 	s.Paused = false
-	/*
-	for s.Player.IsPlaying() {
-		time.Sleep(time.Millisecond)
-	} 
-	*/
 }
 
 func (s *Song) Pause() {
@@ -201,6 +194,8 @@ func (s *Song) Close() {
 	if playerError != nil {
 		panic("song.Player.Close failed: " + playerError.Error())
 	}
+	
+	close(stopUpdating)
 }
 
 //Utils

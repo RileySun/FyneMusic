@@ -30,7 +30,6 @@ type Playlist struct {
 type SongItem struct {
 	Path string
 	Meta *meta.Meta
-	Index int64
 }
 
 //Create
@@ -79,8 +78,7 @@ func getSongs(dirPath string) ([]*SongItem) {
 			
 			//Get meta for playlist tabs
 			metaData := new(meta.Meta)
-			file, _ := os.Open(path)
-			metaData = meta.Get(file, dirPath + "/" + name)
+			metaData = meta.Get(dirPath + "/" + name)
 			songItem.Meta = metaData
 			
 			songItems = append(songItems, songItem)
@@ -90,42 +88,12 @@ func getSongs(dirPath string) ([]*SongItem) {
     return songItems
 }
 
-func getSongsOLD(dirPath string) ([]string, []*meta.Meta) {
-	var songList []string
-	var metaList []*meta.Meta
-	
-	//Open dir
-	dir, dirErr := os.Open(dirPath)
-	if dirErr != nil {
-		panic("Can't open music dir. Error: " + dirErr.Error())
+func (p *Playlist) PlaylistPaths() []string {
+	var paths []string
+	for _, song := range p.Songs {
+		paths = append(paths, song.Path)
 	}
-	
-	//Get file names
-	fileList, fileErr := dir.Readdir(0)//0 to get all files
-	if fileErr != nil {
-		panic("Can't open music dir. Error: " + fileErr.Error())
-	}
-	
-	//Check extension, if is dir, and get Meta
-	for _, f := range fileList {
-		name := f.Name()
-		split := strings.Split(name, ".")
-		ext := split[len(split) - 1]//-1 for 0 index
-		
-		if !f.IsDir() && ext == "mp3" {
-			//Append 
-			path := dirPath + "/" + name
-			songList = append(songList, path)
-			
-			//Get meta for playlist tabs
-			metaData := new(meta.Meta)
-			file, _ := os.Open(path)
-			metaData = meta.Get(file, dirPath + "/" + name)
-			metaList = append(metaList, metaData)
-		}
-    }
-    
-    return songList, metaList
+	return paths
 }
 
 func (p *Playlist) sortDesc(by string) {
@@ -180,7 +148,7 @@ func (p *Playlist) sortAsc(by string) {
 	}
 }//by = Artist, Title
 
-//Renders
+//Render
 func (p *Playlist) Render() *fyne.Container {
 	//Top Area (Logo, and Settings Button)
 	logo := widget.NewLabel("Fyne Pod")
@@ -228,6 +196,7 @@ func (p *Playlist) Render() *fyne.Container {
 	return container.NewBorder(topContainer, mini, nil, nil, tabs)
 }
 
+//Render Lists
 func (p *Playlist) RenderSong(asc bool) *widget.List {
 	if asc {
 		p.sortAsc("Title")
@@ -243,9 +212,19 @@ func (p *Playlist) RenderSong(asc bool) *widget.List {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := p.Songs[i].Meta.Title
+			name := ""
+			
+			if p.Songs[i].Meta.Title == " " {
+				name += p.Songs[i].Meta.File
+			} else {
+				name += p.Songs[i].Meta.Title
+			}
+			
+			
 			if p.Songs[i].Meta.Artist != "" {
 				name += " - " + p.Songs[i].Meta.Artist
+			} else {
+				name += " - Unknown"
 			}
 			o.(*widget.Label).SetText(name)
 		},
@@ -276,7 +255,13 @@ func (p *Playlist) RenderArtist(asc bool) *widget.List {
 			} else {
 				name += "Unkown - "
 			}
-			name += p.Songs[i].Meta.Title
+			
+			if p.Songs[i].Meta.Title == " " {
+				name += p.Songs[i].Meta.File
+			} else {
+				name += p.Songs[i].Meta.Title
+			}
+			
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -306,7 +291,13 @@ func (p *Playlist) RenderAlbum(asc bool) *widget.List {
 			} else {
 				name += "Unkown - "
 			}
-			name += p.Songs[i].Meta.Title
+			
+			if p.Songs[i].Meta.Title == " " {
+				name += p.Songs[i].Meta.File
+			} else {
+				name += p.Songs[i].Meta.Title
+			}	
+			
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -336,7 +327,13 @@ func (p *Playlist) RenderYear(asc bool) *widget.List {
 			} else {
 				name += "Unkown - "
 			}
-			name += p.Songs[i].Meta.Title
+			
+			if p.Songs[i].Meta.Title == " " {
+				name += p.Songs[i].Meta.File
+			} else {
+				name += p.Songs[i].Meta.Title
+			}
+			
 			o.(*widget.Label).SetText(name)
 		},
 	)

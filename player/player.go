@@ -16,26 +16,62 @@ import (
 	"github.com/RileySun/FynePod/playbutton"
 )
 
-
 type Player struct {
 	Song *song.Song
+	Queue *Queue
 	PlayButton *playbutton.PlayButton
 	ReturnToMenu func()
+	
+	artContainer *fyne.Container
+	title *widget.Label
+	slider *track.TrackSlider
+	sliderContainer *fyne.Container
 }
 
-//Declarations
-var podcast *song.Song
-var playButton *playbutton.PlayButton
-var slider *track.TrackSlider
+type Queue struct {
+	Songs []string
+	Index int64
+	Length int64
+}
 
-//Create
+	//Create
+//Player
 func NewPlayer() *Player {
 	player := new(Player)
+	
+	player.Queue = new(Queue)
 	
 	return player
 }
 
-//Render
+//Queue
+func(p *Player) NewQueue(songList []string, index int64) {
+	queue := new(Queue)
+	queue.Index = 0//Not the same thing as index^ (selected songList index)
+	queue.Length = int64(len(songList))
+	
+	//Re-order playlist starting with selected index, then add remaining on to the end
+	newOrder := songList[index:]
+	
+	//If not first selected, Add rest of the songs
+	if index > 0 {
+		for i, _ := range songList {
+			if i < int(index) {
+				newOrder = append(newOrder, songList[i])
+			}
+		}
+	}
+	
+	//Get Music Paths
+	for _, songItem := range newOrder {
+		queue.Songs = append(queue.Songs, songItem)
+	}
+	
+	p.Queue = queue
+}
+
+	//Render
+//Player
 func (p *Player) Render() *fyne.Container {
 	//BackButton
 	backButton := widget.NewButtonWithIcon("", theme. MenuIcon(), func() {p.ReturnToMenu()})
@@ -47,10 +83,14 @@ func (p *Player) Render() *fyne.Container {
 	spacerBottom := layout.NewSpacer()
 	
 	//Meta
-	artwork, title := p.CreateMeta()
+	artwork, title := p.GetMeta()
+	p.artContainer = container.New(layout.NewMaxLayout(), artwork)
+	
+	p.title = widget.NewLabel(title)
+	p.title.Alignment = 1
 	
 	//Slider
-	slider = track.NewTrack(p.Song)
+	p.slider = track.NewTrack(p.Song)
 	
 	//Buttons
 	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
@@ -60,11 +100,26 @@ func (p *Player) Render() *fyne.Container {
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	
 	//Containers
-	sliderContainer := container.New(layout.NewMaxLayout(), slider)
+	p.sliderContainer = container.New(layout.NewMaxLayout(), p.slider)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
-	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, spacerTop, artwork, spacerBottom, title, sliderContainer, buttonContainer)
+	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, spacerTop, p.artContainer, spacerBottom, p.title, p.sliderContainer, buttonContainer)
 	
 	return playerContainer
+}
+
+func (p *Player) RenderUpdate() {
+	//Meta
+	artwork, title := p.GetMeta()
+	p.title.SetText(title)
+	p.artContainer.RemoveAll()
+	p.artContainer.Add(artwork)
+	p.artContainer.Refresh()
+	
+	//Slider
+	p.slider = track.NewTrack(p.Song)
+	p.sliderContainer.RemoveAll()
+	p.sliderContainer.Add(p.slider)
+	p.sliderContainer.Refresh()
 }
 
 func (p *Player) RenderMini() *fyne.Container {
@@ -79,13 +134,20 @@ func (p *Player) RenderMini() *fyne.Container {
 	return buttonContainer
 }
 
-//Utils
+//Queue
+func (p *Player) RenderQueue() {//*fyneContainer {
+	
+}
+
+	//Utils
+//Player
 func (p *Player) UpdateWidgets() {
-	slider.SetTime()
+	p.slider.SetTime()
 	p.PlayButton.UpdateState()
 }
 
-func (p *Player) CreateMeta() (*fyne.Container, *widget.Label) {
+func (p *Player) GetMeta() (*canvas.Image, string) {
+	//Artwork
 	var art *canvas.Image
 	
 	if len(p.Song.Meta.Image) != 0 {
@@ -96,8 +158,8 @@ func (p *Player) CreateMeta() (*fyne.Container, *widget.Label) {
 		art = canvas.NewImageFromFile(dir + "/Default.jpg")
 	}
 	art.FillMode = canvas.ImageFillOriginal
-	artContainer := container.New(layout.NewMaxLayout(), art)
-	
+
+	//Title
 	var titleString string
 	if p.Song.Meta.Title != "" {
 		//Add Tag Title, and Artist if available
@@ -108,17 +170,54 @@ func (p *Player) CreateMeta() (*fyne.Container, *widget.Label) {
 	} else {
 		titleString = p.Song.Meta.File
 	}
-	title := widget.NewLabel(titleString)
-	title.Alignment = 1
 	
-	return artContainer, title
+	return art, titleString
 }
 
-//Buttons
+func (p *Player) Close() {
+	p.Song.Close()
+	p.slider.Close()
+}
+
+//Queue
+func (p *Player) newQueueSong(path string) {
+	p.Song.Close()
+	p.Song = song.NewSong(path)
+	p.PlayButton.Song = p.Song
+	p.UpdateWidgets()
+	p.RenderUpdate()
+	p.Song.Play()
+}
+
+func (p *Player) GetQueueNext() {
+	//if queue exists
+	if p.Queue.Length != 0 {
+		if p.Queue.Index < p.Queue.Length - 1 {
+			p.Queue.Index++
+		} else {
+			p.Queue.Index = 0
+		}
+		newSongPath := p.Queue.Songs[p.Queue.Index]
+		p.newQueueSong(newSongPath)
+	}
+}
+
+func (p *Player) GetQueuePrev(){
+	if p.Queue.Length != 0 {
+		if p.Queue.Index > 0 {
+			p.Queue.Index--
+		} else {
+			p.Queue.Index = p.Queue.Length - 1
+		}
+		newSongPath := p.Queue.Songs[p.Queue.Index]
+		p.newQueueSong(newSongPath)
+	}
+}
+
+//Actions
 func (p *Player) Prev() {
 	if p.Song != nil {
-		p.Song.Restart()
-		p.UpdateWidgets()
+		p.GetQueuePrev()
 	}
 }
 
@@ -138,7 +237,6 @@ func (p *Player) Forward() {
 
 func (p *Player) Next() {
 	if p.Song != nil {
-		slider.SetTime()
-		p.UpdateWidgets()
+		p.GetQueueNext()
 	}
 }

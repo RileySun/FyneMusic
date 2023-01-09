@@ -27,16 +27,13 @@ type TrackSlider struct {
 var TimeUpdateDone chan bool
 
 //Declarations
-var timeStr binding.String
-var maxTimeStr binding.String
-var sliderFloat binding.Float
 var slider *TrackSlider
 
 //Global
 
 //Create
 func NewTrack(current *song.Song) *TrackSlider {
-
+	//New TrackSlider
 	slider = NewTrackSlider(0, float64(current.Length))
 	
 	//Set Song
@@ -92,6 +89,10 @@ func (t *TrackSlider) UpdateTime() {
 func (t *TrackSlider) SetTime() {
 	t.TimeStr.Set(strconv.Itoa(int(t.Song.Current)))
 	t.SliderFloat.Set(float64(t.Song.Current))
+}
+
+func  (t *TrackSlider) Close() {
+	t.TimeUpdateDone <- true
 }
 
 //Extra functions
