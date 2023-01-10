@@ -90,11 +90,23 @@ func selectSong(index int64) {
 func returnToMenu() {
 	list := playList.Render()
 	list.Resize(fyne.NewSize(400, 600))
-	playerObj.UpdateWidgets()
+	//If a song has been loaded
+	if playerObj.Song != nil {
+		playerObj.UpdateWidgets()
+	}
 	window.SetContent(list)
 }
 
 func openSettings() {
 	settingsPage := settings.Render()
+	settings.ReturnToMenu = returnToMenu
+	settings.ChangeVolume = changeVolume
 	window.SetContent(settingsPage)
+}
+
+//Util
+func changeVolume(v float64) {
+	if playerObj.Song != nil {
+		playerObj.Song.Player.SetVolume(v)
+	}
 }

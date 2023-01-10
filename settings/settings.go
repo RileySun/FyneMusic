@@ -22,8 +22,16 @@ var ParentWindow fyne.Window
 var config *Config
 var dirLocation *widget.Entry
 
+var ReturnToMenu func()
+var ChangeVolume func(float64)
+
 func Render() *fyne.Container {
+	//Spacer
 	spacer := layout.NewSpacer()
+	
+	//Back Button
+	back := widget.NewButtonWithIcon("", theme.CancelIcon(), func() {ReturnToMenu()})
+	backContainer := container.New(layout.NewHBoxLayout(), spacer, back)
 	
 	//Music Dir
 	dirLabel := widget.NewLabel("Music Directory")
@@ -32,18 +40,21 @@ func Render() *fyne.Container {
 	dirLocation.Text = config.Dir
 	button := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), func() {selectMusicDir()})
 	dirRow := container.NewBorder(nil, nil, nil, button, dirLocation)
-	dirContainer := container.New(layout.NewVBoxLayout(), dirLabel, dirRow)
+	dirContainer := container.New(layout.NewVBoxLayout(), spacer, dirLabel, dirRow, spacer)
 	
 	//Master Volume
 	volumeLabel := widget.NewLabel("Master Volume")
 	volumeLabel.Alignment = 1 //Center
-	volume := widget.NewSlider(0, 100)
+	volume := widget.NewSlider(0, 1)
+	volume.Step = 0.1
 	volume.OnChanged = func(v float64) {changeVolume(v)}
 	volume.Value = config.Volume
 	
+	optionsContainer := container.New(layout.NewVBoxLayout(), dirContainer, volumeLabel, volume)
+	
 	saveButton := widget.NewButtonWithIcon("Save", theme.DocumentSaveIcon(), func() {saveConfig()})
 	
-	settingsContainer := container.New(layout.NewVBoxLayout(), spacer, dirContainer, volumeLabel, volume, spacer, saveButton)
+	settingsContainer := container.NewBorder(backContainer, saveButton, nil, nil, optionsContainer)
 	
 	return settingsContainer
 }
@@ -81,6 +92,8 @@ func saveConfig() {
 	if saveErr != nil {
 		panic("Config Save Error: " + saveErr.Error())
 	}
+	
+	ReturnToMenu()
 }
 
 //Actions
@@ -98,4 +111,5 @@ func onSelectedDir(folder fyne.ListableURI, err error) {
 
 func changeVolume(newVolume float64) {
 	config.Volume = newVolume
+	ChangeVolume(newVolume)
 }

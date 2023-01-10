@@ -9,6 +9,7 @@ import(
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 	"github.com/RileySun/FynePod/meta"
+	"github.com/RileySun/FynePod/settings"
 )
 
 type Song struct {
@@ -28,6 +29,9 @@ var stopUpdating chan bool
 //Constructor
 
 func NewSong(filepath string) *Song {
+	//Get Congif
+	config := settings.GetSettings()
+	
 	//Song pointer
 	currentSong := new(Song)
 	
@@ -69,6 +73,7 @@ func NewSong(filepath string) *Song {
 	
 	//New Player
 	currentSong.Player = context.NewPlayer(currentSong.decoder)
+	currentSong.Player.SetVolume(config.Volume)
 	
 	return currentSong
 }
@@ -82,6 +87,15 @@ func OpenSongFile(filepath string) *os.File {
 	}
 	
 	return file
+}
+
+func (s *Song) IsEnded() bool {
+	//Cant be over if still playing
+	if s.Player.IsPlaying() {
+		return false
+	}
+	
+	return s.Current >= s.Length
 }
 
 //Start updating seek

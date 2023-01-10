@@ -10,6 +10,7 @@ import (
 	
 	"bytes"
 	"os"
+	"time"
 	
 	"github.com/RileySun/FynePod/song"
 	"github.com/RileySun/FynePod/track"
@@ -19,6 +20,7 @@ import (
 type Player struct {
 	Song *song.Song
 	Queue *Queue
+	stopUpdating chan bool
 	PlayButton *playbutton.PlayButton
 	ReturnToMenu func()
 	
@@ -40,6 +42,8 @@ func NewPlayer() *Player {
 	player := new(Player)
 	
 	player.Queue = new(Queue)
+	player.stopUpdating  = make(chan bool, 100)
+	player.startUpdate()
 	
 	return player
 }
@@ -68,6 +72,30 @@ func(p *Player) NewQueue(songList []string, index int64) {
 	}
 	
 	p.Queue = queue
+}
+
+
+	//Update
+func (p *Player) startUpdate() {
+	go func() {
+		for {
+			select {
+				case <- p.stopUpdating:
+					return
+				default:
+					if p.Song != nil {
+						if p.Song.IsEnded() {
+							p.GetQueueNext()
+						}
+					}
+					time.Sleep(time.Second/2)
+	   		 }
+		}
+	}()
+}
+
+func (p *Player) endUpdate() {
+	p.stopUpdating <- true
 }
 
 	//Render
@@ -177,6 +205,7 @@ func (p *Player) GetMeta() (*canvas.Image, string) {
 func (p *Player) Close() {
 	p.Song.Close()
 	p.slider.Close()
+	p.stopUpdating <- true
 }
 
 //Queue
