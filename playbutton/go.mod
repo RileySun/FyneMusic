@@ -1,3 +1,3 @@
-module github.com/RileySun/FynePod/playbutton
+module github.com/RileySun/FyneMusic/playbutton
 
 go 1.19

@@ -12,9 +12,9 @@ import (
 	"os"
 	"time"
 	
-	"github.com/RileySun/FynePod/song"
-	"github.com/RileySun/FynePod/track"
-	"github.com/RileySun/FynePod/playbutton"
+	"github.com/RileySun/FyneMusic/song"
+	"github.com/RileySun/FyneMusic/track"
+	"github.com/RileySun/FyneMusic/playbutton"
 )
 
 type Player struct {

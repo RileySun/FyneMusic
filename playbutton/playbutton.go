@@ -4,7 +4,7 @@ import(
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/theme"
 	
-	"github.com/RileySun/FynePod/song"
+	"github.com/RileySun/FyneMusic/song"
 )
 
 //Struct with extra functions

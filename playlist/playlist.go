@@ -13,8 +13,8 @@ import(
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/theme"
 	
-	"github.com/RileySun/FynePod/meta"
-	"github.com/RileySun/FynePod/player"
+	"github.com/RileySun/FyneMusic/meta"
+	"github.com/RileySun/FyneMusic/player"
 )
 
 //Struct

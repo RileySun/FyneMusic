@@ -1,3 +1,3 @@
-module github.com/RileySun/FynePod/player
+module github.com/RileySun/FyneMusic/player
 
 go 1.19

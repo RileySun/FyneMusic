@@ -8,8 +8,8 @@ import(
 	
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
-	"github.com/RileySun/FynePod/meta"
-	"github.com/RileySun/FynePod/settings"
+	"github.com/RileySun/FyneMusic/meta"
+	"github.com/RileySun/FyneMusic/settings"
 )
 
 type Song struct {

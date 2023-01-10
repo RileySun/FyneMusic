@@ -6,10 +6,10 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	
-	"github.com/RileySun/FynePod/player"
-	"github.com/RileySun/FynePod/playlist"
-	"github.com/RileySun/FynePod/song"
-	"github.com/RileySun/FynePod/settings"
+	"github.com/RileySun/FyneMusic/player"
+	"github.com/RileySun/FyneMusic/playlist"
+	"github.com/RileySun/FyneMusic/song"
+	"github.com/RileySun/FyneMusic/settings"
 )
 
 var config *settings.Config
@@ -19,7 +19,7 @@ var window fyne.Window
 
 //Init
 func init() {
-	fmt.Println("FynePod")
+	fmt.Println("FyneMusic")
 	
 	config = settings.GetSettings()
 	
@@ -36,7 +36,7 @@ func init() {
 //Main
 func main() {
 	app := app.New()
-	window = app.NewWindow("FynePod")
+	window = app.NewWindow("FyneMusic")
 	
 	//Settings window
 	settings.ParentWindow = window

@@ -1,3 +1,3 @@
-module github.com/RileySun/FynePod/song
+module github.com/RileySun/FyneMusic/song
 
 go 1.19

@@ -1,34 +1,34 @@
-module github.com/RileySun/FynePod
+module github.com/RileySun/FyneMusic
 
 go 1.19
 
-replace github.com/RileySun/FynePod/playlist => ./playlist
+replace github.com/RileySun/FyneMusic/playlist => ./playlist
 
-replace github.com/RileySun/FynePod/player => ./player
+replace github.com/RileySun/FyneMusic/player => ./player
 
-replace github.com/RileySun/FynePod/song => ./song
+replace github.com/RileySun/FyneMusic/song => ./song
 
-replace github.com/RileySun/FynePod/meta => ./meta
+replace github.com/RileySun/FyneMusic/meta => ./meta
 
-replace github.com/RileySun/FynePod/track => ./track
+replace github.com/RileySun/FyneMusic/track => ./track
 
-replace github.com/RileySun/FynePod/playbutton => ./playbutton
+replace github.com/RileySun/FyneMusic/playbutton => ./playbutton
 
-replace github.com/RileySun/FynePod/settings => ./settings
+replace github.com/RileySun/FyneMusic/settings => ./settings
 
 require (
 	fyne.io/fyne/v2 v2.3.0
-	github.com/RileySun/FynePod/player v0.0.0-00010101000000-000000000000
-	github.com/RileySun/FynePod/playlist v0.0.0-00010101000000-000000000000
-	github.com/RileySun/FynePod/settings v0.0.0-00010101000000-000000000000
-	github.com/RileySun/FynePod/song v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/player v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/playlist v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/settings v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/song v0.0.0-00010101000000-000000000000
 )
 
 require (
 	fyne.io/systray v1.10.1-0.20221115204952-d16a6177e6f1 // indirect
-	github.com/RileySun/FynePod/meta v0.0.0-00010101000000-000000000000 // indirect
-	github.com/RileySun/FynePod/playbutton v0.0.0-00010101000000-000000000000 // indirect
-	github.com/RileySun/FynePod/track v0.0.0-00010101000000-000000000000 // indirect
+	github.com/RileySun/FyneMusic/meta v0.0.0-00010101000000-000000000000 // indirect
+	github.com/RileySun/FyneMusic/playbutton v0.0.0-00010101000000-000000000000 // indirect
+	github.com/RileySun/FyneMusic/track v0.0.0-00010101000000-000000000000 // indirect
 	github.com/benoitkugler/textlayout v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dhowden/tag v0.0.0-20220618230019-adf36e896086 // indirect

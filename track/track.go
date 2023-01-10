@@ -8,7 +8,7 @@ import(
 	"time"
 	"strconv"
 	
-	"github.com/RileySun/FynePod/song"
+	"github.com/RileySun/FyneMusic/song"
 )
 
 //Struct with extra functions
