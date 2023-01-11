@@ -11,6 +11,7 @@ import (
 	"bytes"
 	"os"
 	"time"
+	"image/color"
 	
 	"github.com/RileySun/FyneMusic/song"
 	"github.com/RileySun/FyneMusic/track"
@@ -23,11 +24,13 @@ type Player struct {
 	stopUpdating chan bool
 	PlayButton *playbutton.PlayButton
 	ReturnToMenu func()
+	ResumeSong func()
 	
 	artContainer *fyne.Container
 	title *widget.Label
 	slider *track.TrackSlider
 	sliderContainer *fyne.Container
+	miniContainer *fyne.Container
 }
 
 type Queue struct {
@@ -151,6 +154,18 @@ func (p *Player) RenderUpdate() {
 }
 
 func (p *Player) RenderMini() *fyne.Container {
+	//Get Meta Mini
+	p.miniContainer = container.New(layout.NewMaxLayout())
+	if p.Song != nil {
+		artwork, title := p.GetRawMeta()
+		miniButton := widget.NewButtonWithIcon(title, artwork, p.ResumeSong)
+		p.miniContainer.Add(miniButton)
+	}
+	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
+	topBorder.StrokeWidth = 2
+	topContainer := container.NewBorder(topBorder, nil, nil, nil, p.miniContainer)
+
+	//Controls
 	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
 	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
 	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
@@ -159,7 +174,18 @@ func (p *Player) RenderMini() *fyne.Container {
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	
-	return buttonContainer
+	finalContainer := container.New(layout.NewVBoxLayout(), topContainer, buttonContainer)
+	
+	return finalContainer
+}
+
+func (p *Player) RenderMiniUpdate() {
+	//Meta
+	artwork, title := p.GetRawMeta()
+	miniButton := widget.NewButtonWithIcon(title, artwork, p.ResumeSong)
+	p.miniContainer.RemoveAll()
+	p.miniContainer.Add(miniButton)
+	p.PlayButton.UpdateState()
 }
 
 //Queue
@@ -189,7 +215,7 @@ func (p *Player) GetMeta() (*canvas.Image, string) {
 
 	//Title
 	var titleString string
-	if p.Song.Meta.Title != "" {
+	if p.Song.Meta.Title != " " {
 		//Add Tag Title, and Artist if available
 		titleString = p.Song.Meta.Title
 		if p.Song.Meta.Artist != "" {
@@ -200,6 +226,33 @@ func (p *Player) GetMeta() (*canvas.Image, string) {
 	}
 	
 	return art, titleString
+}
+
+func (p *Player) GetRawMeta() (fyne.Resource, string) {
+	//Art
+	var art *canvas.Image
+	if len(p.Song.Meta.Image) != 0 {
+		reader := bytes.NewReader(p.Song.Meta.Image)
+		art = canvas.NewImageFromReader(reader, p.Song.Meta.Title)
+	} else {
+		dir, _ := os.Getwd()
+		art = canvas.NewImageFromFile(dir + "/Default.jpg")
+	}
+	artByte := art.Resource
+	
+	//Title
+	var titleString string
+	if p.Song.Meta.Title != " " {
+		//Add Tag Title, and Artist if available
+		titleString = p.Song.Meta.Title
+		if p.Song.Meta.Artist != "" {
+			titleString += " - " + p.Song.Meta.Artist
+		}
+	} else {
+		titleString = p.Song.Meta.File
+	}
+	
+	return artByte, titleString
 }
 
 func (p *Player) Close() {
@@ -213,9 +266,10 @@ func (p *Player) newQueueSong(path string) {
 	p.Song.Close()
 	p.Song = song.NewSong(path)
 	p.PlayButton.Song = p.Song
+	p.Song.Play()
 	p.UpdateWidgets()
 	p.RenderUpdate()
-	p.Song.Play()
+	p.RenderMiniUpdate()
 }
 
 func (p *Player) GetQueueNext() {

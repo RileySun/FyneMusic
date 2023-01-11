@@ -26,6 +26,7 @@ func init() {
 	//Player Module (needed for Playlist, must come first)
 	playerObj = player.NewPlayer()
 	playerObj.ReturnToMenu = func() {returnToMenu()}
+	playerObj.ResumeSong = func() {resumeSong()}
 	
 	//Playlist Module
 	playList = playlist.NewPlaylist(config.Dir, playerObj)
@@ -61,9 +62,7 @@ func selectSong(index int64) {
 	if playerObj.Song != nil {
 		//If selecting same song, open player, if not, close song
 		if (playerObj.Song.Path == playList.Songs[index].Path) {
-			playerContainer := playerObj.Render()
-			window.SetContent(playerContainer)
-			playerObj.UpdateWidgets()
+			resumeSong()
 			return
 		} else {
 			playerObj.Close()
@@ -84,6 +83,12 @@ func selectSong(index int64) {
 	
 	//Play Selected Song
 	playerObj.Song.Play()
+	playerObj.UpdateWidgets()
+}
+
+func resumeSong() {
+	playerContainer := playerObj.Render()
+	window.SetContent(playerContainer)
 	playerObj.UpdateWidgets()
 }
 
