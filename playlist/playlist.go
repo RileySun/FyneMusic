@@ -25,6 +25,13 @@ type Playlist struct {
 	Select func(int64)
 	Settings func()
 	Player *player.Player
+	TabContainer *fyne.Container
+	
+	//Search Stuff
+	Original []*SongItem
+	TopFinal *fyne.Container
+	SearchEntry *widget.Entry
+	SearchButton *widget.Button
 }
 
 type SongItem struct {
@@ -39,6 +46,7 @@ func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 	playlist.Player = playerObj
 	
 	playlist.Songs = getSongs(dirPath)
+	playlist.Original = playlist.Songs
 	playlist.Index = 0
 	playlist.Length = int64(len(playlist.Songs)) - 1 //-1 for 0 index
 	
@@ -154,12 +162,24 @@ func (p *Playlist) Render() *fyne.Container {
 	logo := widget.NewLabel("Fyne Pod")
 	space := layout.NewSpacer()
 	settingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {p.Settings()})
-	topHBox := container.New(layout.NewHBoxLayout(), logo, space, settingsButton)
+	p.SearchButton = widget.NewButtonWithIcon("", theme.SearchIcon(), func() {p.openSearch()})
+	topHBox := container.New(layout.NewHBoxLayout(), logo, space, p.SearchButton, settingsButton)
 	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
 	topBorder.StrokeWidth = 2
 	topContainer := container.NewBorder(nil, topBorder, nil, nil, topHBox)
+	p.TopFinal = container.New(layout.NewVBoxLayout(), topContainer)
 	
+	//Song Sort Tabs
+	tabs := p.RenderTabs()
+	p.TabContainer = container.New(layout.NewMaxLayout(), tabs)
 	
+	//Mini Player
+	mini := p.Player.RenderMini()
+	
+	return container.NewBorder(p.TopFinal, mini, nil, nil, p.TabContainer)
+}
+
+func (p *Playlist) RenderTabs() *container.AppTabs {	
 	//Song List
 	songList := p.RenderSong(false)
 	songList.OnSelected = func(id widget.ListItemID) {p.OnSelect(id)}
@@ -189,11 +209,7 @@ func (p *Playlist) Render() *fyne.Container {
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
 	
-	
-	//Mini Player
-	mini := p.Player.RenderMini()
-	
-	return container.NewBorder(topContainer, mini, nil, nil, tabs)
+	return tabs
 }
 
 //Render Lists
@@ -346,4 +362,62 @@ func (p *Playlist) RenderYear(asc bool) *widget.List {
 func (p *Playlist) OnSelect(id widget.ListItemID) {
 	index := int64(id)
 	p.Select(index)
+	p.closeSearch()
+}
+
+func (p *Playlist) openSearch() {
+	p.SearchButton.OnTapped = p.closeSearch
+	p.SearchEntry = widget.NewEntry()
+	p.SearchEntry.OnChanged = func(s string) {p.search(s)}
+	p.SearchEntry.SetPlaceHolder("Search")
+	searchContainer := container.New(layout.NewMaxLayout(), p.SearchEntry)
+	p.TopFinal.Add(searchContainer)
+	p.TopFinal.Refresh()
+}
+
+func (p *Playlist) closeSearch() {
+	//if search is open
+	if (len(p.TopFinal.Objects) > 1) {
+		p.SearchButton.OnTapped = p.openSearch
+		last := p.TopFinal.Objects[len(p.TopFinal.Objects) - 1]//get last object in container
+		p.TopFinal.Remove(last)
+		p.TopFinal.Refresh()
+	}
+	
+	//Refresh List
+	p.Songs = p.Original
+	tabs := p.RenderTabs()
+	p.TabContainer.RemoveAll()
+	p.TabContainer.Add(tabs)
+	p.TabContainer.Refresh()
+}
+
+func (p *Playlist) search(searchString string) {	
+	if searchString == "" {
+		p.Songs = p.Original
+		tabs := p.RenderTabs()
+		p.TabContainer.RemoveAll()
+		p.TabContainer.Add(tabs)
+		p.TabContainer.Refresh()
+		return
+	}
+	
+	var searchSlice []*SongItem
+	for _, song := range p.Original {
+		file := strings.Contains(song.Meta.File, searchString)
+		title := strings.Contains(song.Meta.Title, searchString)
+		artist := strings.Contains(song.Meta.Artist, searchString)
+		album := strings.Contains(song.Meta.Album, searchString)
+		year := strings.Contains(song.Meta.Year, searchString)
+		
+		if file || title || artist || album || year {
+			searchSlice = append(searchSlice, song)
+		}
+	}
+	
+	p.Songs = searchSlice
+	tabs := p.RenderTabs()
+	p.TabContainer.RemoveAll()
+	p.TabContainer.Add(tabs)
+	p.TabContainer.Refresh()
 }
