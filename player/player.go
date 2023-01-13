@@ -12,6 +12,7 @@ import (
 	"os"
 	"time"
 	"image/color"
+	"math/rand"
 	
 	"github.com/RileySun/FyneMusic/song"
 	"github.com/RileySun/FyneMusic/track"
@@ -21,6 +22,8 @@ import (
 type Player struct {
 	Song *song.Song
 	Queue *Queue
+	Shuffle bool
+	Repeat bool
 	stopUpdating chan bool
 	PlayButton *playbutton.PlayButton
 	ReturnToMenu func()
@@ -31,10 +34,13 @@ type Player struct {
 	slider *track.TrackSlider
 	sliderContainer *fyne.Container
 	miniContainer *fyne.Container
+	shuffleButton *widget.Button
+	repeatButton *widget.Button
 }
 
 type Queue struct {
 	Songs []string
+	Original []string
 	Index int64
 	Length int64
 }
@@ -45,8 +51,12 @@ func NewPlayer() *Player {
 	player := new(Player)
 	
 	player.Queue = new(Queue)
+	player.Shuffle = false
+	player.Repeat = false
 	player.stopUpdating  = make(chan bool, 100)
 	player.startUpdate()
+	
+	rand.Seed(time.Now().UnixNano())
 	
 	return player
 }
@@ -73,10 +83,10 @@ func(p *Player) NewQueue(songList []string, index int64) {
 	for _, songItem := range newOrder {
 		queue.Songs = append(queue.Songs, songItem)
 	}
+	queue.Original = queue.Songs
 	
 	p.Queue = queue
 }
-
 
 	//Update
 func (p *Player) startUpdate() {
@@ -104,10 +114,24 @@ func (p *Player) endUpdate() {
 	//Render
 //Player
 func (p *Player) Render() *fyne.Container {
+	//Repeat and Shuffle
+	p.shuffleButton = widget.NewButtonWithIcon("", theme.NavigateNextIcon(), func() {p.ShuffleState()})
+	p.repeatButton = widget.NewButtonWithIcon("", theme.MediaReplayIcon(), func() {p.RepeatState()})
+	if p.Shuffle {
+		p.shuffleButton.Importance = widget.HighImportance
+	} else {
+		p.shuffleButton.Importance = widget.MediumImportance
+	} // These HAVE to be here for some reason or they dont work.
+	if p.Repeat {
+		p.repeatButton.Importance = widget.HighImportance
+	} else {
+		p.repeatButton.Importance = widget.MediumImportance
+	}
+
 	//BackButton
-	backButton := widget.NewButtonWithIcon("", theme. MenuIcon(), func() {p.ReturnToMenu()})
+	backButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {p.ReturnToMenu()})
 	backSpacer := layout.NewSpacer()
-	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, backButton)
+	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, p.shuffleButton, p.repeatButton, backButton)
 	
 	//Spacers
 	spacerTop := layout.NewSpacer()
@@ -122,17 +146,17 @@ func (p *Player) Render() *fyne.Container {
 	
 	//Slider
 	p.slider = track.NewTrack(p.Song)
+	p.sliderContainer = container.New(layout.NewMaxLayout(), p.slider)
 	
 	//Buttons
-	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
+	prevButton := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
 	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
 	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
 	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {p.Next()})
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
-	
-	//Containers
-	p.sliderContainer = container.New(layout.NewMaxLayout(), p.slider)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
+	
+	//Output
 	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, spacerTop, p.artContainer, spacerBottom, p.title, p.sliderContainer, buttonContainer)
 	
 	return playerContainer
@@ -196,6 +220,7 @@ func (p *Player) RenderQueue() {//*fyneContainer {
 	//Utils
 //Player
 func (p *Player) UpdateWidgets() {
+	//Slider and PlayButton
 	p.slider.SetTime()
 	p.PlayButton.UpdateState()
 }
@@ -275,17 +300,23 @@ func (p *Player) newQueueSong(path string) {
 func (p *Player) GetQueueNext() {
 	//if queue exists
 	if p.Queue.Length != 0 {
-		if p.Queue.Index < p.Queue.Length - 1 {
-			p.Queue.Index++
-		} else {
-			p.Queue.Index = 0
+		//If repeat is on
+		if p.Repeat {
+			newSongPath := p.Queue.Songs[p.Queue.Index]
+			p.newQueueSong(newSongPath)
+		} else {		
+			if p.Queue.Index < p.Queue.Length - 1 {
+				p.Queue.Index++
+			} else {
+				p.Queue.Index = 0
+			}
+			newSongPath := p.Queue.Songs[p.Queue.Index]
+			p.newQueueSong(newSongPath)
 		}
-		newSongPath := p.Queue.Songs[p.Queue.Index]
-		p.newQueueSong(newSongPath)
 	}
 }
 
-func (p *Player) GetQueuePrev(){
+func (p *Player) GetQueuePrev() {
 	if p.Queue.Length != 0 {
 		if p.Queue.Index > 0 {
 			p.Queue.Index--
@@ -295,6 +326,22 @@ func (p *Player) GetQueuePrev(){
 		newSongPath := p.Queue.Songs[p.Queue.Index]
 		p.newQueueSong(newSongPath)
 	}
+}
+
+func (p *Player) ShuffleQueue() {
+	currentSong := p.Queue.Songs[p.Queue.Index]
+	songs := p.Queue.Songs
+	rand.Shuffle(len(songs), func(a, b int) {
+		songs[a], songs[b] = songs[b], songs[a]
+	})
+	//get new index
+	for i, v := range songs {
+		if v == currentSong {
+			p.Queue.Index = int64(i)
+			p.Queue.Songs = songs
+		}
+	}
+	
 }
 
 //Actions
@@ -321,5 +368,27 @@ func (p *Player) Forward() {
 func (p *Player) Next() {
 	if p.Song != nil {
 		p.GetQueueNext()
+	}
+}
+
+func (p *Player) ShuffleState() {
+	if p.Shuffle {
+		p.shuffleButton.Importance = widget.MediumImportance
+		p.Queue.Songs = p.Queue.Original
+		p.Shuffle = false
+	} else {
+		p.shuffleButton.Importance = widget.HighImportance
+		p.ShuffleQueue()
+		p.Shuffle = true
+	}
+}
+
+func (p *Player) RepeatState() {
+	if p.Repeat {
+		p.repeatButton.Importance = widget.MediumImportance
+		p.Repeat = false
+	} else {
+		p.repeatButton.Importance = widget.HighImportance
+		p.Repeat = true
 	}
 }

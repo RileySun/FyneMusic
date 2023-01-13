@@ -21,7 +21,7 @@ func NewPlayButton(current *song.Song) *PlayButton {
 	button.ExtendBaseWidget(button)
 	button.Song = current
 	button.Icon = theme.MediaPlayIcon()
-	button.Text = "Play"
+	button.Text = "Play "
 	button.OnTapped = func() {button.ChangeState()}
 	
 	return button

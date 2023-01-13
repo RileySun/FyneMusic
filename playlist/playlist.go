@@ -403,12 +403,13 @@ func (p *Playlist) search(searchString string) {
 	}
 	
 	var searchSlice []*SongItem
+	lowerSearch := strings.ToLower(searchString) //Lower case to make search case insensitive
 	for _, song := range p.Original {
-		file := strings.Contains(song.Meta.File, searchString)
-		title := strings.Contains(song.Meta.Title, searchString)
-		artist := strings.Contains(song.Meta.Artist, searchString)
-		album := strings.Contains(song.Meta.Album, searchString)
-		year := strings.Contains(song.Meta.Year, searchString)
+		file := strings.Contains(strings.ToLower(song.Meta.File), lowerSearch)
+		title := strings.Contains(strings.ToLower(song.Meta.Title), lowerSearch)
+		artist := strings.Contains(strings.ToLower(song.Meta.Artist), lowerSearch)
+		album := strings.Contains(strings.ToLower(song.Meta.Album), lowerSearch)
+		year := strings.Contains(strings.ToLower(song.Meta.Year), lowerSearch)
 		
 		if file || title || artist || album || year {
 			searchSlice = append(searchSlice, song)
