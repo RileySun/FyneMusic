@@ -1,7 +1,8 @@
 package playlist
 
 import(
-	"os"
+	"path/filepath"
+	"io/fs"
 	"strings"
 	"image/color"
 	"sort"
@@ -54,46 +55,36 @@ func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 }
 
 //Util
-func getSongs(dirPath string) ([]*SongItem) {
-	//Output Slice
+func getSongs(dirpath string) []*SongItem {
 	var songItems []*SongItem
-	 
-	//Open dir
-	dir, dirErr := os.Open(dirPath)
-	if dirErr != nil {
-		panic("Can't open music dir. Error: " + dirErr.Error())
-	}
-	
-	//Get file names
-	fileList, fileErr := dir.Readdir(0)//0 to get all files
-	if fileErr != nil {
-		panic("Can't open music dir. Error: " + fileErr.Error())
-	}
-	
-	//Check extension, if is dir, and get Meta
-	for _, f := range fileList {
-		name := f.Name()
+
+	walkErr := filepath.Walk(dirpath, func(path string, info fs.FileInfo, err error) error {
+		name := info.Name()
 		split := strings.Split(name, ".")
 		ext := split[len(split) - 1]//-1 for 0 index
 		
-		if !f.IsDir() && ext == "mp3" {
-			//New Song Item 
+		if !info.IsDir() && ext == "mp3" {
 			songItem := new(SongItem)
 			
 			//Append 
-			path := dirPath + "/" + name
 			songItem.Path = path
 			
 			//Get meta for playlist tabs
 			metaData := new(meta.Meta)
-			metaData = meta.Get(dirPath + "/" + name)
+			metaData = meta.Get(path)
 			songItem.Meta = metaData
 			
 			songItems = append(songItems, songItem)
 		}
-    }
-    
-    return songItems
+		
+		return nil
+	})
+	
+	if walkErr != nil {
+		panic("Playlist: Rescursive Song Get Err:" + walkErr.Error())
+	}
+	
+	return songItems
 }
 
 func (p *Playlist) PlaylistPaths() []string {
@@ -159,7 +150,7 @@ func (p *Playlist) sortAsc(by string) {
 //Render
 func (p *Playlist) Render() *fyne.Container {
 	//Top Area (Logo, and Settings Button)
-	logo := widget.NewLabel("Fyne Pod")
+	logo := widget.NewLabel("Fyne Music")
 	space := layout.NewSpacer()
 	settingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {p.Settings()})
 	p.SearchButton = widget.NewButtonWithIcon("", theme.SearchIcon(), func() {p.openSearch()})
