@@ -16,6 +16,7 @@ import(
 type Config struct {
 	Dir string `json:"musicDir"`
 	Volume float64 `json:"volume"`
+	Setup bool `json:"setup"`
 }
 
 var ParentWindow fyne.Window
@@ -75,6 +76,11 @@ func GetSettings() *Config {
 }
 
 func saveConfig() {
+	
+	if !config.Setup {
+		config.Setup = true
+	}
+	
 	data, jsonErr := json.MarshalIndent(config, "", "	")
 	
 	if jsonErr != nil {

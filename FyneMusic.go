@@ -53,6 +53,11 @@ func main() {
 	
 	window.Resize(fyne.NewSize(400, 600))
 	
+	//If setup not done, show settings page
+	if !config.Setup {
+		openSettings()
+	}
+	
 	window.ShowAndRun()
 }
 
