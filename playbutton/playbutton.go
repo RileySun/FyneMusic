@@ -2,9 +2,9 @@ package playbutton
 
 import(
 	"fyne.io/fyne/v2/widget"
-	"fyne.io/fyne/v2/theme"
 	
 	"github.com/RileySun/FyneMusic/song"
+	"github.com/RileySun/FyneMusic/icons"
 )
 
 //Struct with extra functions
@@ -20,7 +20,7 @@ func NewPlayButton(current *song.Song) *PlayButton {
 	button := &PlayButton{}
 	button.ExtendBaseWidget(button)
 	button.Song = current
-	button.Icon = theme.MediaPlayIcon()
+	button.Icon = icons.Play
 	button.Text = "Play "
 	button.OnTapped = func() {button.ChangeState()}
 	
@@ -32,12 +32,12 @@ func (b *PlayButton) ChangeState() {
 	if b.Song != nil {
 		if b.Song.Paused {
 			b.Song.Play()
-			b.Icon = theme.MediaPauseIcon()
+			b.Icon = icons.Pause
 			b.Text = "Pause"
 			b.Refresh()
 		} else {
 			b.Song.Pause()
-			b.Icon = theme.MediaPlayIcon()
+			b.Icon = icons.Play
 			b.Text = "Play"
 			b.Refresh()
 		}
@@ -46,11 +46,11 @@ func (b *PlayButton) ChangeState() {
 
 func (b *PlayButton) UpdateState() {
 	if b.Song.Paused {
-		b.Icon = theme.MediaPlayIcon()
+		b.Icon = icons.Play
 		b.Text = "Play"
 		b.Refresh()
 	} else {
-		b.Icon = theme.MediaPauseIcon()
+		b.Icon = icons.Pause
 		b.Text = "Pause"
 		b.Refresh()
 	}

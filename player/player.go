@@ -6,7 +6,6 @@ import (
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/canvas"
 	"fyne.io/fyne/v2/widget"
-	"fyne.io/fyne/v2/theme"
 	
 	"bytes"
 	"os"
@@ -15,6 +14,7 @@ import (
 	"math/rand"
 	
 	"github.com/RileySun/FyneMusic/song"
+	"github.com/RileySun/FyneMusic/icons"
 	"github.com/RileySun/FyneMusic/track"
 	"github.com/RileySun/FyneMusic/playbutton"
 )
@@ -115,8 +115,8 @@ func (p *Player) endUpdate() {
 //Player
 func (p *Player) Render() *fyne.Container {
 	//Repeat and Shuffle
-	p.shuffleButton = widget.NewButtonWithIcon("", theme.NavigateNextIcon(), func() {p.ShuffleState()})
-	p.repeatButton = widget.NewButtonWithIcon("", theme.MediaReplayIcon(), func() {p.RepeatState()})
+	p.shuffleButton = widget.NewButtonWithIcon("", icons.Shuffle, func() {p.ShuffleState()})
+	p.repeatButton = widget.NewButtonWithIcon("", icons.Repeat, func() {p.RepeatState()})
 	if p.Shuffle {
 		p.shuffleButton.Importance = widget.HighImportance
 	} else {
@@ -129,7 +129,7 @@ func (p *Player) Render() *fyne.Container {
 	}
 
 	//BackButton
-	backButton := widget.NewButtonWithIcon("", theme.MenuIcon(), func() {p.ReturnToMenu()})
+	backButton := widget.NewButtonWithIcon("", icons.Menu, func() {p.ReturnToMenu()})
 	backSpacer := layout.NewSpacer()
 	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, p.shuffleButton, p.repeatButton, backButton)
 	
@@ -149,10 +149,10 @@ func (p *Player) Render() *fyne.Container {
 	p.sliderContainer = container.New(layout.NewMaxLayout(), p.slider)
 	
 	//Buttons
-	prevButton := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
-	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {p.Next()})
+	prevButton := widget.NewButtonWithIcon("Prev", icons.Prev, func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("Rewind", icons.Rewind, func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("Forward", icons.Forward, func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("Next", icons.Next, func() {p.Next()})
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	
@@ -190,10 +190,10 @@ func (p *Player) RenderMini() *fyne.Container {
 	topContainer := container.NewBorder(topBorder, nil, nil, nil, p.miniContainer)
 
 	//Controls
-	prevButton  := widget.NewButtonWithIcon("Prev", theme.MediaSkipPreviousIcon(), func() {p.Prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", theme.MediaFastRewindIcon(), func() {p.Rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", theme. MediaFastForwardIcon(), func() {p.Forward()})
-	nextButton := widget.NewButtonWithIcon("Next", theme. MediaSkipNextIcon(), func() {p.Next()})
+	prevButton := widget.NewButtonWithIcon("Prev", icons.Prev, func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("Rewind", icons.Rewind, func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("Forward", icons.Forward, func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("Next", icons.Next, func() {p.Next()})
 	
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)

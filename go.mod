@@ -16,6 +16,8 @@ replace github.com/RileySun/FyneMusic/playbutton => ./playbutton
 
 replace github.com/RileySun/FyneMusic/settings => ./settings
 
+replace github.com/RileySun/FyneMusic/icons => ./icons
+
 require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/RileySun/FyneMusic/player v0.0.0-00010101000000-000000000000
@@ -26,6 +28,7 @@ require (
 
 require (
 	fyne.io/systray v1.10.1-0.20221115204952-d16a6177e6f1 // indirect
+	github.com/RileySun/FyneMusic/icons v0.0.0-00010101000000-000000000000 // indirect
 	github.com/RileySun/FyneMusic/meta v0.0.0-00010101000000-000000000000 // indirect
 	github.com/RileySun/FyneMusic/playbutton v0.0.0-00010101000000-000000000000 // indirect
 	github.com/RileySun/FyneMusic/track v0.0.0-00010101000000-000000000000 // indirect

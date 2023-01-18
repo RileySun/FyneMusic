@@ -26,6 +26,9 @@ type Song struct {
 
 var stopUpdating chan bool
 
+//This is super important when closing a song (see Close())
+var context *oto.Context
+
 //Constructor
 
 func NewSong(filepath string) *Song {
@@ -64,7 +67,9 @@ func NewSong(filepath string) *Song {
 	currentSong.Length = currentSong.IOtoSec(currentSong.decoder.Length())
 	
 	//NewContext
-	context, ready, contextError := oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
+	var ready chan struct{}
+	var contextError error
+	context, ready, contextError = oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
 	if contextError != nil {
 		panic("Can't create context. Error: " + contextError.Error())
 	}
@@ -199,15 +204,20 @@ func (s *Song) Forward() {
 }
 	
 func (s *Song) Close() {
+	playerError := s.Player.Close()
+	if playerError != nil {
+		panic("song.Player.Close failed: " + playerError.Error())
+	}
+	
 	fileError := s.file.Close()
 	if fileError != nil {
 		panic("song.File.Close failed: " + fileError.Error())
 	}
 	
-	playerError := s.Player.Close()
-	if playerError != nil {
-		panic("song.Player.Close failed: " + playerError.Error())
-	}
+	/*
+		If this is not here, then the context does not quit properly and only every other song is played see
+	*/
+	context.Suspend()
 	
 	close(stopUpdating)
 }

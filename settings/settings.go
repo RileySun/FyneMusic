@@ -10,7 +10,8 @@ import(
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
-	"fyne.io/fyne/v2/theme"
+	
+	"github.com/RileySun/FyneMusic/icons"
 )
 
 type Config struct {
@@ -31,7 +32,7 @@ func Render() *fyne.Container {
 	spacer := layout.NewSpacer()
 	
 	//Back Button
-	back := widget.NewButtonWithIcon("", theme.CancelIcon(), func() {ReturnToMenu()})
+	back := widget.NewButtonWithIcon("", icons.Cancel, func() {ReturnToMenu()})
 	backContainer := container.New(layout.NewHBoxLayout(), spacer, back)
 	
 	//Music Dir
@@ -39,7 +40,7 @@ func Render() *fyne.Container {
 	dirLabel.Alignment = 1 //Center
 	dirLocation = widget.NewEntry()
 	dirLocation.Text = config.Dir
-	button := widget.NewButtonWithIcon("", theme.FolderOpenIcon(), func() {selectMusicDir()})
+	button := widget.NewButtonWithIcon("", icons.Folder, func() {selectMusicDir()})
 	dirRow := container.NewBorder(nil, nil, nil, button, dirLocation)
 	dirContainer := container.New(layout.NewVBoxLayout(), spacer, dirLabel, dirRow, spacer)
 	
@@ -53,7 +54,7 @@ func Render() *fyne.Container {
 	
 	optionsContainer := container.New(layout.NewVBoxLayout(), dirContainer, volumeLabel, volume)
 	
-	saveButton := widget.NewButtonWithIcon("Save", theme.DocumentSaveIcon(), func() {saveConfig()})
+	saveButton := widget.NewButtonWithIcon("Save", icons.Save, func() {saveConfig()})
 	
 	settingsContainer := container.NewBorder(backContainer, saveButton, nil, nil, optionsContainer)
 	

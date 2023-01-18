@@ -12,10 +12,10 @@ import(
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/canvas"
-	"fyne.io/fyne/v2/theme"
 	
 	"github.com/RileySun/FyneMusic/meta"
 	"github.com/RileySun/FyneMusic/player"
+	"github.com/RileySun/FyneMusic/icons"
 )
 
 //Struct
@@ -152,8 +152,8 @@ func (p *Playlist) Render() *fyne.Container {
 	//Top Area (Logo, and Settings Button)
 	logo := widget.NewLabel("Fyne Music")
 	space := layout.NewSpacer()
-	settingsButton := widget.NewButtonWithIcon("", theme.SettingsIcon(), func() {p.Settings()})
-	p.SearchButton = widget.NewButtonWithIcon("", theme.SearchIcon(), func() {p.openSearch()})
+	settingsButton := widget.NewButtonWithIcon("", icons.Settings, func() {p.Settings()})
+	p.SearchButton = widget.NewButtonWithIcon("", icons.Search, func() {p.openSearch()})
 	topHBox := container.New(layout.NewHBoxLayout(), logo, space, p.SearchButton, settingsButton)
 	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
 	topBorder.StrokeWidth = 2
