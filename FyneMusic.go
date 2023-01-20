@@ -52,6 +52,7 @@ func main() {
 	window.CenterOnScreen()
 	
 	window.Resize(fyne.NewSize(400, 600))
+	window.SetFixedSize(true)
 	
 	//If setup not done, show settings page
 	if !config.Setup {
@@ -98,6 +99,7 @@ func resumeSong() {
 }
 
 func returnToMenu() {
+	playList.Songs = playlist.GetSongs(config.Dir)
 	list := playList.Render()
 	list.Resize(fyne.NewSize(400, 600))
 	//If a song has been loaded

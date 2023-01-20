@@ -46,7 +46,7 @@ func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 	
 	playlist.Player = playerObj
 	
-	playlist.Songs = getSongs(dirPath)
+	playlist.Songs = GetSongs(dirPath)
 	playlist.Original = playlist.Songs
 	playlist.Index = 0
 	playlist.Length = int64(len(playlist.Songs)) - 1 //-1 for 0 index
@@ -55,7 +55,7 @@ func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 }
 
 //Util
-func getSongs(dirpath string) []*SongItem {
+func GetSongs(dirpath string) []*SongItem {
 	var songItems []*SongItem
 
 	walkErr := filepath.Walk(dirpath, func(path string, info fs.FileInfo, err error) error {
@@ -219,20 +219,7 @@ func (p *Playlist) RenderSong(asc bool) *widget.List {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := ""
-			
-			if p.Songs[i].Meta.Title == " " {
-				name += p.Songs[i].Meta.File
-			} else {
-				name += p.Songs[i].Meta.Title
-			}
-			
-			
-			if p.Songs[i].Meta.Artist != "" {
-				name += " - " + p.Songs[i].Meta.Artist
-			} else {
-				name += " - Unknown"
-			}
+			name := p.Songs[i].Meta.Title + " - " + p.Songs[i].Meta.Artist
 			o.(*widget.Label).SetText(name)
 		},
 	)

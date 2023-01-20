@@ -133,9 +133,10 @@ func (p *Player) Render() *fyne.Container {
 	backSpacer := layout.NewSpacer()
 	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, p.shuffleButton, p.repeatButton, backButton)
 	
-	//Spacers
-	spacerTop := layout.NewSpacer()
-	spacerBottom := layout.NewSpacer()
+	//Top Container
+	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
+	topBorder.StrokeWidth = 2
+	topContainer := container.NewBorder(nil, topBorder, nil, nil, backContainer)
 	
 	//Meta
 	artwork, title := p.GetMeta()
@@ -156,8 +157,11 @@ func (p *Player) Render() *fyne.Container {
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
 	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	
+	//Bottom Container
+	bottomContainer := container.New(layout.NewVBoxLayout(), p.title, p.sliderContainer, buttonContainer)
+	
 	//Output
-	playerContainer := container.New(layout.NewVBoxLayout(), backContainer, spacerTop, p.artContainer, spacerBottom, p.title, p.sliderContainer, buttonContainer)
+	playerContainer := container.NewBorder(topContainer, bottomContainer, nil, nil, p.artContainer)
 	
 	return playerContainer
 }
@@ -168,6 +172,7 @@ func (p *Player) RenderUpdate() {
 	p.title.SetText(title)
 	p.artContainer.RemoveAll()
 	p.artContainer.Add(artwork)
+	artwork.Refresh()
 	p.artContainer.Refresh()
 	
 	//Slider
@@ -236,19 +241,11 @@ func (p *Player) GetMeta() (*canvas.Image, string) {
 		dir, _ := os.Getwd()
 		art = canvas.NewImageFromFile(dir + "/Default.jpg")
 	}
-	art.FillMode = canvas.ImageFillOriginal
+	art.FillMode = canvas.ImageFillStretch
+	art.Resize(fyne.NewSize(435, 435))
 
 	//Title
-	var titleString string
-	if p.Song.Meta.Title != " " {
-		//Add Tag Title, and Artist if available
-		titleString = p.Song.Meta.Title
-		if p.Song.Meta.Artist != "" {
-			titleString += " - " + p.Song.Meta.Artist
-		}
-	} else {
-		titleString = p.Song.Meta.File
-	}
+	titleString := p.Song.Meta.Title + " - " + p.Song.Meta.Artist
 	
 	return art, titleString
 }

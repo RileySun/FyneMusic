@@ -4,6 +4,7 @@ import(
 	"os"
 	"github.com/dhowden/tag"
 	"io/ioutil"
+	"strconv"
 )
 
 type Meta struct {
@@ -38,12 +39,41 @@ func Get(path string) *Meta {
 	
 	//If no tags, return stat info
 	if tagErr != nil {
-		panic("Error MAN :" + tagErr.Error())
+		//panic("Error TagErr:" + tagErr.Error())
+		meta.Title = s.Name()
+		return meta
 	}
 	
 	//Else fill in tag meta
-	meta.Title = m.Title()
-	meta.Artist = m.Artist()
+	
+	//Title
+	if m.Title() != " " && m.Title() != "" {
+		meta.Title = m.Title()
+	} else {
+		meta.Title = meta.File
+	}
+	
+	//Artist
+	if m.Artist() != " " && m.Artist() != "" {
+		meta.Artist = m.Artist()
+	} else {
+		meta.Artist = "Unknown"
+	}
+	
+	//Album
+	if m.Album() != " " && m.Album() != "" {
+		meta.Album = m.Album()
+	} else {
+		meta.Album = "Unknown"
+	}
+	
+	//Year
+	
+	if m.Year() > 1000 && m.Year() < 9999 {
+		meta.Year = strconv.Itoa(m.Year())
+	}
+	
+	//Art
 	if m.Picture() != nil {
 		meta.Image = m.Picture().Data
 	} else {
