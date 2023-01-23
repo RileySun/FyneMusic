@@ -5,7 +5,6 @@ import(
 	"io/fs"
 	"strings"
 	"image/color"
-	"sort"
 	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -15,7 +14,7 @@ import(
 	
 	"github.com/RileySun/FyneMusic/meta"
 	"github.com/RileySun/FyneMusic/player"
-	"github.com/RileySun/FyneMusic/icons"
+	"github.com/RileySun/FyneMusic/utils"
 )
 
 //Struct
@@ -28,10 +27,15 @@ type Playlist struct {
 	Player *player.Player
 	TabContainer *fyne.Container
 	
-	//Search Stuff
+	//Search & Sort Stuff
 	Original []*SongItem
+	SongSort []*SongItem
+	ArtistSort []*SongItem
+	AlbumSort []*SongItem
+	YearSort []*SongItem
+	
+	//Fyne Objects (change state out of scope)
 	TopFinal *fyne.Container
-	SearchEntry *widget.Entry
 	SearchButton *widget.Button
 }
 
@@ -43,14 +47,11 @@ type SongItem struct {
 //Create
 func NewPlaylist(dirPath string, playerObj *player.Player) *Playlist {
 	playlist := new(Playlist)
-	
 	playlist.Player = playerObj
-	
 	playlist.Songs = GetSongs(dirPath)
 	playlist.Original = playlist.Songs
 	playlist.Index = 0
 	playlist.Length = int64(len(playlist.Songs)) - 1 //-1 for 0 index
-	
 	return playlist
 }
 
@@ -95,65 +96,13 @@ func (p *Playlist) PlaylistPaths() []string {
 	return paths
 }
 
-func (p *Playlist) sortDesc(by string) {
-	switch by {
-		case "Title":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Title < p.Songs[b].Meta.Title
-			})
-			break
-		case "Artist":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Artist < p.Songs[b].Meta.Artist
-			})
-			break
-		case "Album":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Album < p.Songs[b].Meta.Album
-			})
-			break
-		case "Year":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Year < p.Songs[b].Meta.Year
-			})
-			break
-		default:
-	}
-}//by = Artist, Title
-
-func (p *Playlist) sortAsc(by string) {
-	switch by {
-		case "Title":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Title > p.Songs[b].Meta.Title
-			})
-			break
-		case "Artist":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Artist > p.Songs[b].Meta.Artist
-			})
-			break
-		case "Album":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Album > p.Songs[b].Meta.Album
-			})
-			break
-		case "Year":
-			sort.Slice(p.Songs, func(a, b int) bool {
-				return p.Songs[a].Meta.Year > p.Songs[b].Meta.Year
-			})
-			break
-		default:
-	}
-}//by = Artist, Title
-
 //Render
 func (p *Playlist) Render() *fyne.Container {
 	//Top Area (Logo, and Settings Button)
 	logo := widget.NewLabel("Fyne Music")
 	space := layout.NewSpacer()
-	settingsButton := widget.NewButtonWithIcon("", icons.Settings, func() {p.Settings()})
-	p.SearchButton = widget.NewButtonWithIcon("", icons.Search, func() {p.openSearch()})
+	settingsButton := widget.NewButtonWithIcon("", utils.Icons.Settings, func() {p.Settings()})
+	p.SearchButton = widget.NewButtonWithIcon("", utils.Icons.Search, func() {p.openSearch()})
 	topHBox := container.New(layout.NewHBoxLayout(), logo, space, p.SearchButton, settingsButton)
 	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
 	topBorder.StrokeWidth = 2
@@ -199,27 +148,40 @@ func (p *Playlist) RenderTabs() *container.AppTabs {
 		container.NewTabItem("Year", yearListContainer),
 	)
 	tabs.SetTabLocation(container.TabLocationTop)
+	tabs.OnSelected = func(t *container.TabItem) {
+		switch t.Text {
+			case "Title":
+				p.Songs = p.SongSort
+				break
+			case "Artist":
+				p.Songs = p.ArtistSort
+				break
+			case "Album":
+				p.Songs = p.AlbumSort
+				break
+			case "Year":
+				p.Songs = p.YearSort
+				break
+			default:
+		}
+	}
 	
 	return tabs
 }
 
 //Render Lists
 func (p *Playlist) RenderSong(asc bool) *widget.List {
-	if asc {
-		p.sortAsc("Title")
-	} else {
-		p.sortDesc("Title")
-	}
+	p.SongSort = p.SortByTitle(asc)
 	
 	list := widget.NewList(
 		func() int {
-			return len(p.Songs)
+			return len(p.SongSort)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := p.Songs[i].Meta.Title + " - " + p.Songs[i].Meta.Artist
+			name := p.SongSort[i].Meta.Title + " - " + p.SongSort[i].Meta.Artist
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -228,34 +190,17 @@ func (p *Playlist) RenderSong(asc bool) *widget.List {
 }
 
 func (p *Playlist) RenderArtist(asc bool) *widget.List {
-	if asc {
-		p.sortAsc("Artist")
-	} else {
-		p.sortDesc("Artist")
-	}
+	p.ArtistSort = p.SortByArtist(asc)
 	
 	list := widget.NewList(
 		func() int {
-			return len(p.Songs)
+			return len(p.ArtistSort)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := ""
-			//If artist tag exists, then use that, if not, write unknown
-			if p.Songs[i].Meta.Artist != "" {
-				name += p.Songs[i].Meta.Artist + " - "
-			} else {
-				name += "Unkown - "
-			}
-			
-			if p.Songs[i].Meta.Title == " " {
-				name += p.Songs[i].Meta.File
-			} else {
-				name += p.Songs[i].Meta.Title
-			}
-			
+			name := p.ArtistSort[i].Meta.Artist + " - " + p.ArtistSort[i].Meta.Title
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -264,34 +209,17 @@ func (p *Playlist) RenderArtist(asc bool) *widget.List {
 }
 
 func (p *Playlist) RenderAlbum(asc bool) *widget.List {
-	if asc {
-		p.sortAsc("Album")
-	} else {
-		p.sortDesc("Album")
-	}
+	p.AlbumSort = p.SortByAlbum(asc)
 	
 	list := widget.NewList(
 		func() int {
-			return len(p.Songs)
+			return len(p.AlbumSort)
 		},
 		func() fyne.CanvasObject {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := ""
-			//If artist tag exists, then use that, if not, write unknown
-			if p.Songs[i].Meta.Album != "" {
-				name += p.Songs[i].Meta.Album + " - "
-			} else {
-				name += "Unkown - "
-			}
-			
-			if p.Songs[i].Meta.Title == " " {
-				name += p.Songs[i].Meta.File
-			} else {
-				name += p.Songs[i].Meta.Title
-			}	
-			
+			name := p.AlbumSort[i].Meta.Album + " - " + p.AlbumSort[i].Meta.Title			
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -300,11 +228,7 @@ func (p *Playlist) RenderAlbum(asc bool) *widget.List {
 }
 
 func (p *Playlist) RenderYear(asc bool) *widget.List {
-	if asc {
-		p.sortAsc("Year")
-	} else {
-		p.sortDesc("Year")
-	}
+	p.YearSort = p.SortByYear(asc)
 	
 	list := widget.NewList(
 		func() int {
@@ -314,20 +238,7 @@ func (p *Playlist) RenderYear(asc bool) *widget.List {
 			return widget.NewLabel("template")
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			name := ""
-			//If artist tag exists, then use that, if not, write unknown
-			if p.Songs[i].Meta.Year != "" {
-				name += p.Songs[i].Meta.Year + " - "
-			} else {
-				name += "Unkown - "
-			}
-			
-			if p.Songs[i].Meta.Title == " " {
-				name += p.Songs[i].Meta.File
-			} else {
-				name += p.Songs[i].Meta.Title
-			}
-			
+			name := p.YearSort[i].Meta.Year + " - " + p.YearSort[i].Meta.Title
 			o.(*widget.Label).SetText(name)
 		},
 	)
@@ -344,11 +255,16 @@ func (p *Playlist) OnSelect(id widget.ListItemID) {
 }
 
 func (p *Playlist) openSearch() {
+	//Button Action
 	p.SearchButton.OnTapped = p.closeSearch
-	p.SearchEntry = widget.NewEntry()
-	p.SearchEntry.OnChanged = func(s string) {p.search(s)}
-	p.SearchEntry.SetPlaceHolder("Search")
-	searchContainer := container.New(layout.NewMaxLayout(), p.SearchEntry)
+	//New Entry
+	searchEntry := widget.NewEntry()
+	searchEntry.OnChanged = func(s string) {p.search(s)}
+	searchEntry.SetPlaceHolder("Search")
+	//New Clear Button
+	clearSearch := widget.NewButtonWithIcon("", utils.Icons.Cancel, func() {p.closeSearch()})
+	searchContainer := container.NewBorder(nil, nil, nil, clearSearch, searchEntry)
+	//Add to View
 	p.TopFinal.Add(searchContainer)
 	p.TopFinal.Refresh()
 }
@@ -370,7 +286,7 @@ func (p *Playlist) closeSearch() {
 	p.TabContainer.Refresh()
 }
 
-func (p *Playlist) search(searchString string) {	
+func (p *Playlist) search(searchString string) {
 	if searchString == "" {
 		p.Songs = p.Original
 		tabs := p.RenderTabs()

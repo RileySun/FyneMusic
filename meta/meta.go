@@ -2,9 +2,10 @@ package meta
 
 import(
 	"os"
-	"github.com/dhowden/tag"
-	"io/ioutil"
 	"strconv"
+	"io/ioutil"
+	
+	"github.com/dhowden/tag"
 )
 
 type Meta struct {
@@ -69,8 +70,10 @@ func Get(path string) *Meta {
 	
 	//Year
 	
-	if m.Year() > 1000 && m.Year() < 9999 {
+	if int(m.Year()) > 1000 && int(m.Year()) < 9999 {
 		meta.Year = strconv.Itoa(m.Year())
+	} else {
+		meta.Year = "Unknown"
 	}
 	
 	//Art
