@@ -99,7 +99,7 @@ func (p *Playlist) PlaylistPaths() []string {
 //Render
 func (p *Playlist) Render() *fyne.Container {
 	//Top Area (Logo, and Settings Button)
-	logo := widget.NewLabel("Fyne Music")
+	logo := widget.NewLabel("Playlist")
 	space := layout.NewSpacer()
 	settingsButton := widget.NewButtonWithIcon("", utils.Icons.Settings, func() {p.Settings()})
 	p.SearchButton = widget.NewButtonWithIcon("", utils.Icons.Search, func() {p.openSearch()})
@@ -142,7 +142,7 @@ func (p *Playlist) RenderTabs() *container.AppTabs {
 	
 	//Tabs
 	tabs := container.NewAppTabs(
-		container.NewTabItem("Title", songListContainer),
+		container.NewTabItem("Song", songListContainer),
 		container.NewTabItem("Artist", artistListContainer),
 		container.NewTabItem("Album", albumListContainer),
 		container.NewTabItem("Year", yearListContainer),
@@ -150,7 +150,7 @@ func (p *Playlist) RenderTabs() *container.AppTabs {
 	tabs.SetTabLocation(container.TabLocationTop)
 	tabs.OnSelected = func(t *container.TabItem) {
 		switch t.Text {
-			case "Title":
+			case "Song":
 				p.Songs = p.SongSort
 				break
 			case "Artist":
@@ -165,6 +165,9 @@ func (p *Playlist) RenderTabs() *container.AppTabs {
 			default:
 		}
 	}
+	
+	//Set first
+	p.Songs = p.SongSort
 	
 	return tabs
 }

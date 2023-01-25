@@ -141,11 +141,10 @@ func (s *Song) Rewind() {
 		s.Pause()
 	}
 	
-	//if current seek is less than 10 seconds, then restart song
-	currentSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekCurrent)
+	newSeek := 10 * int64(s.decoder.SampleRate()) * 4
 	
-	if currentSeek > 1000000 {
-		_, _ = s.Player.(io.Seeker).Seek(-1000000, io.SeekCurrent)
+	if s.Current > 10 {
+		_, _ = s.Player.(io.Seeker).Seek(newSeek, io.SeekCurrent)
 		s.Current -= 10
 	} else {
 		_, _ = s.Player.(io.Seeker).Seek(0, io.SeekStart)
@@ -185,16 +184,14 @@ func (s *Song) Forward() {
 		s.Pause()
 	}
 	
-	//if current seek is less than 10 seconds from end, then end song
-	currentSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekCurrent)
-	finalSeek, _ := s.Player.(io.Seeker).Seek(0, io.SeekEnd)
+	newSeek := 10 * int64(s.decoder.SampleRate()) * 4
 	
-	if currentSeek < finalSeek {
-		_, _ = s.Player.(io.Seeker).Seek(1000000, io.SeekCurrent)
+	if s.Current < s.Length - 10 {
+		_, _ = s.Player.(io.Seeker).Seek(newSeek, io.SeekCurrent)
 		s.Current += 10
 	} else {
 		_, _ = s.Player.(io.Seeker).Seek(0, io.SeekEnd)
-		s.Current = 0
+		s.Current = s.Length
 	}
 	
 	//If was paused, continue playing

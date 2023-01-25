@@ -12,15 +12,21 @@ import (
 	"github.com/RileySun/FyneMusic/settings"
 )
 
+var fyneApp fyne.App
+var window fyne.Window
 var config *settings.Config
 var playList *playlist.Playlist
 var playerObj *player.Player
-var window fyne.Window
 
 //Init
 func init() {
 	fmt.Println("FyneMusic")
+}
+
+func setup() {
+	fyneApp = app.NewWithID("com.sunshine.fynemusic")
 	
+	settings.LoadSettings(fyneApp)
 	config = settings.GetSettings()
 	
 	//Player Module (needed for Playlist, must come first)
@@ -36,8 +42,8 @@ func init() {
 
 //Main
 func main() {
-	app := app.New()
-	window = app.NewWindow("FyneMusic")
+	setup()
+	window = fyneApp.NewWindow("FyneMusic")
 	
 	//Settings window
 	settings.ParentWindow = window

@@ -21,7 +21,7 @@ func NewPlayButton(current *song.Song) *PlayButton {
 	button.ExtendBaseWidget(button)
 	button.Song = current
 	button.Icon = utils.Icons.Play
-	button.Text = "Play "
+	button.Text = ""
 	button.OnTapped = func() {button.ChangeState()}
 	
 	return button
@@ -33,12 +33,10 @@ func (b *PlayButton) ChangeState() {
 		if b.Song.Paused {
 			b.Song.Play()
 			b.Icon = utils.Icons.Pause
-			b.Text = "Pause"
 			b.Refresh()
 		} else {
 			b.Song.Pause()
 			b.Icon = utils.Icons.Play
-			b.Text = "Play"
 			b.Refresh()
 		}
 	}
@@ -47,11 +45,9 @@ func (b *PlayButton) ChangeState() {
 func (b *PlayButton) UpdateState() {
 	if b.Song.Paused {
 		b.Icon = utils.Icons.Play
-		b.Text = "Play"
 		b.Refresh()
 	} else {
 		b.Icon = utils.Icons.Pause
-		b.Text = "Pause"
 		b.Refresh()
 	}
 }

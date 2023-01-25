@@ -13,7 +13,10 @@ import(
 
 //Struct with extra functions
 type TrackSlider struct {
-	widget.Slider
+	widget.Slider //Extend
+	
+	zero *widget.Label
+	length *widget.Label
 	
 	Song *song.Song
 	
@@ -28,8 +31,6 @@ var TimeUpdateDone chan bool
 
 //Declarations
 var slider *TrackSlider
-
-//Global
 
 //Create
 func NewTrack(current *song.Song) *TrackSlider {
@@ -93,6 +94,7 @@ func (t *TrackSlider) SetTime() {
 
 func  (t *TrackSlider) Close() {
 	t.TimeUpdateDone <- true
+	close(t.TimeUpdateDone)
 }
 
 //Extra functions
@@ -113,9 +115,4 @@ func (t *TrackSlider) Dragged(e *fyne.DragEvent) {
 		t.Song.Play()
 		t.UpdateTime()
 	}
-}
-
-func (t *TrackSlider) DragEnd() {
-	
-	//t.UpdateTime()
 }

@@ -3,9 +3,9 @@ package meta
 import(
 	"os"
 	"strconv"
-	"io/ioutil"
 	
 	"github.com/dhowden/tag"
+	"github.com/RileySun/FyneMusic/utils"
 )
 
 type Meta struct {
@@ -18,6 +18,7 @@ type Meta struct {
 	Size int64
 }
 
+//Get Meta Data using filepath
 func Get(path string) *Meta {
 	meta := new(Meta)
 	
@@ -80,8 +81,8 @@ func Get(path string) *Meta {
 	if m.Picture() != nil {
 		meta.Image = m.Picture().Data
 	} else {
-		data, _ := ioutil.ReadFile("Default.json")
-		meta.Image = data
+		img := utils.Credit()
+		meta.Image = img.StaticContent
 	}
 	
 	return meta

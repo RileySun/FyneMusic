@@ -1,17 +1,18 @@
 package settings
 
 import(
-	"os"
-	"io/ioutil"
-	"encoding/json"
+	"image/color"
 	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
 	"fyne.io/fyne/v2/layout"
 	"fyne.io/fyne/v2/widget"
 	"fyne.io/fyne/v2/dialog"
+	"fyne.io/fyne/v2/canvas"
 	
 	"github.com/RileySun/FyneMusic/utils"
+	
+	"os"
 )
 
 type Config struct {
@@ -21,7 +22,6 @@ type Config struct {
 }
 
 var ParentWindow fyne.Window
-var config *Config
 var dirLocation *widget.Entry
 
 var ReturnToMenu func()
@@ -32,8 +32,12 @@ func Render() *fyne.Container {
 	spacer := layout.NewSpacer()
 	
 	//Back Button
+	settingsLabel := widget.NewLabel("Settings")
 	back := widget.NewButtonWithIcon("", utils.Icons.Cancel, func() {ReturnToMenu()})
-	backContainer := container.New(layout.NewHBoxLayout(), spacer, back)
+	backContainer := container.New(layout.NewHBoxLayout(), settingsLabel, spacer, back)
+	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
+	topBorder.StrokeWidth = 2
+	topContainer := container.NewBorder(nil, topBorder, nil, nil, backContainer)
 	
 	//Music Dir
 	dirLabel := widget.NewLabel("Music Directory")
@@ -52,53 +56,51 @@ func Render() *fyne.Container {
 	volume.OnChanged = func(v float64) {changeVolume(v)}
 	volume.Value = config.Volume
 	
-	optionsContainer := container.New(layout.NewVBoxLayout(), dirContainer, volumeLabel, volume)
+	//Credit
+	creditIMG := canvas.NewImageFromResource(utils.Credit())
+	creditIMG.FillMode = canvas.ImageFillOriginal
+	creditLabel := widget.NewLabel("Sunshine")
+	creditLabel.Alignment = 1
+	
+	optionsContainer := container.New(layout.NewVBoxLayout(), dirContainer, volumeLabel, volume, spacer, creditIMG, creditLabel)
+	paddedContainer := container.New(layout.NewPaddedLayout(), optionsContainer)
 	
 	saveButton := widget.NewButtonWithIcon("Save", utils.Icons.Save, func() {saveConfig()})
 	
-	settingsContainer := container.NewBorder(backContainer, saveButton, nil, nil, optionsContainer)
+	settingsContainer := container.NewBorder(topContainer, saveButton, nil, nil, paddedContainer)
 	
 	return settingsContainer
 }
 
+var config *Config
+var mainApp fyne.App
+
 //Util
+func LoadSettings(app fyne.App) {
+	//App
+	mainApp = app
+	
+	//Get working dir, in case music dir isnt set, this stops the song searcher from checking every file on the computer on first load
+	defaultDir, _ := os.Getwd()
+	
+	//Config
+	config = new(Config)
+	config.Dir = mainApp.Preferences().StringWithFallback("Dir", defaultDir)
+	config.Volume = mainApp.Preferences().FloatWithFallback("Volume", 0.5)
+	config.Setup = mainApp.Preferences().BoolWithFallback("Setup", false)
+	
+}
 func GetSettings() *Config {
-	data, fileErr := ioutil.ReadFile("./config.json")
-	if fileErr != nil {
-		panic("Config Error: " + fileErr.Error())
-	}
-	
-	marshalErr := json.Unmarshal(data, &config)
-	if marshalErr != nil {
-		panic("Unmarshal Error: " + marshalErr.Error())
-	}
-	
 	return config
 }
 
 func saveConfig() {
-	
 	if !config.Setup {
-		config.Setup = true
+		mainApp.Preferences().SetBool("Setup", true)
 	}
 	
-	data, jsonErr := json.MarshalIndent(config, "", "	")
-	
-	if jsonErr != nil {
-		panic("Config Marshal Error: " + jsonErr.Error())
-	}
-	
-	configFile, fileErr := os.Create("config.json") 
-	
-	if fileErr != nil {
-		panic("Config File Overwrite Error: " + fileErr.Error())
-	}
-	
-	_, saveErr := configFile.Write(data)
-	
-	if saveErr != nil {
-		panic("Config Save Error: " + saveErr.Error())
-	}
+	mainApp.Preferences().SetString("Dir", config.Dir)
+	mainApp.Preferences().SetFloat("Volume", config.Volume)
 	
 	ReturnToMenu()
 }
@@ -118,5 +120,6 @@ func onSelectedDir(folder fyne.ListableURI, err error) {
 
 func changeVolume(newVolume float64) {
 	config.Volume = newVolume
+	mainApp.Preferences().SetFloat("Volume", newVolume) //Do it here also cause people might just click close without saving
 	ChangeVolume(newVolume)
 }

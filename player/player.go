@@ -12,6 +12,8 @@ import (
 	"time"
 	"image/color"
 	"math/rand"
+	"math"
+	"strconv"
 	
 	"github.com/RileySun/FyneMusic/song"
 	"github.com/RileySun/FyneMusic/track"
@@ -32,6 +34,8 @@ type Player struct {
 	artContainer *fyne.Container
 	title *widget.Label
 	slider *track.TrackSlider
+	sliderCurrent *widget.Label
+	sliderEnd *widget.Label
 	sliderContainer *fyne.Container
 	miniContainer *fyne.Container
 	shuffleButton *widget.Button
@@ -100,6 +104,7 @@ func (p *Player) startUpdate() {
 						if p.Song.IsEnded() {
 							p.GetQueueNext()
 						}
+						p.sliderCurrent.SetText(p.timeToString(p.Song.Current))
 					}
 					time.Sleep(time.Second/2)
 	   		 }
@@ -114,6 +119,9 @@ func (p *Player) endUpdate() {
 	//Render
 //Player
 func (p *Player) Render() *fyne.Container {
+	//Player Label
+	playerLabel := widget.NewLabel("Player")
+	
 	//Repeat and Shuffle
 	p.shuffleButton = widget.NewButtonWithIcon("", utils.Icons.Shuffle, func() {p.ShuffleState()})
 	p.repeatButton = widget.NewButtonWithIcon("", utils.Icons.Repeat, func() {p.RepeatState()})
@@ -131,7 +139,7 @@ func (p *Player) Render() *fyne.Container {
 	//BackButton
 	backButton := widget.NewButtonWithIcon("", utils.Icons.Menu, func() {p.ReturnToMenu()})
 	backSpacer := layout.NewSpacer()
-	backContainer := container.New(layout.NewHBoxLayout(), backSpacer, p.shuffleButton, p.repeatButton, backButton)
+	backContainer := container.New(layout.NewHBoxLayout(), playerLabel, backSpacer, p.shuffleButton, p.repeatButton, backButton)
 	
 	//Top Container
 	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
@@ -146,16 +154,19 @@ func (p *Player) Render() *fyne.Container {
 	p.title.Alignment = 1
 	
 	//Slider
+	p.sliderCurrent = widget.NewLabel("0:00")
 	p.slider = track.NewTrack(p.Song)
-	p.sliderContainer = container.New(layout.NewMaxLayout(), p.slider)
+	p.sliderEnd = widget.NewLabel(p.timeToString(p.Song.Length))
+	sliderBorder := container.NewBorder(nil, nil, p.sliderCurrent, p.sliderEnd, p.slider)
+	p.sliderContainer = container.New(layout.NewMaxLayout(), sliderBorder)
 	
 	//Buttons
-	prevButton := widget.NewButtonWithIcon("Prev", utils.Icons.Prev, func() {p.Prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", utils.Icons.Rewind, func() {p.Rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", utils.Icons.Forward, func() {p.Forward()})
-	nextButton := widget.NewButtonWithIcon("Next", utils.Icons.Next, func() {p.Next()})
+	prevButton := widget.NewButtonWithIcon("", utils.Icons.Prev, func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("", utils.Icons.Rewind, func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("", utils.Icons.Forward, func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("", utils.Icons.Next, func() {p.Next()})
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
-	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
+	buttonContainer := container.New(layout.NewAdaptiveGridLayout(5), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
 	
 	//Bottom Container
 	bottomContainer := container.New(layout.NewVBoxLayout(), p.title, p.sliderContainer, buttonContainer)
@@ -177,8 +188,13 @@ func (p *Player) RenderUpdate() {
 	
 	//Slider
 	p.slider = track.NewTrack(p.Song)
+	p.sliderCurrent = widget.NewLabel(p.timeToString(p.Song.Current))
+	p.sliderEnd = widget.NewLabel(p.timeToString(p.Song.Length))
+	sliderBorder := container.NewBorder(nil, nil, p.sliderCurrent, p.sliderEnd, p.slider)
+	
+	//Refresh
 	p.sliderContainer.RemoveAll()
-	p.sliderContainer.Add(p.slider)
+	p.sliderContainer.Add(sliderBorder)	
 	p.sliderContainer.Refresh()
 }
 
@@ -195,13 +211,14 @@ func (p *Player) RenderMini() *fyne.Container {
 	topContainer := container.NewBorder(topBorder, nil, nil, nil, p.miniContainer)
 
 	//Controls
-	prevButton := widget.NewButtonWithIcon("Prev", utils.Icons.Prev, func() {p.Prev()})
-	rewindButton := widget.NewButtonWithIcon("Rewind", utils.Icons.Rewind, func() {p.Rewind()})
-	forwardButton := widget.NewButtonWithIcon("Forward", utils.Icons.Forward, func() {p.Forward()})
-	nextButton := widget.NewButtonWithIcon("Next", utils.Icons.Next, func() {p.Next()})
+	prevButton := widget.NewButtonWithIcon("", utils.Icons.Prev, func() {p.Prev()})
+	rewindButton := widget.NewButtonWithIcon("", utils.Icons.Rewind, func() {p.Rewind()})
+	forwardButton := widget.NewButtonWithIcon("", utils.Icons.Forward, func() {p.Forward()})
+	nextButton := widget.NewButtonWithIcon("", utils.Icons.Next, func() {p.Next()})
 	
 	p.PlayButton = playbutton.NewPlayButton(p.Song)
-	buttonContainer := container.New(layout.NewHBoxLayout(), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
+	buttonContainer := container.New(layout.NewAdaptiveGridLayout(5), prevButton, rewindButton, p.PlayButton, forwardButton, nextButton)
+	//buttonCenter := container.New(layout.NewMaxLayout(), buttonContainer)
 	
 	finalContainer := container.New(layout.NewVBoxLayout(), topContainer, buttonContainer)
 	
@@ -217,6 +234,14 @@ func (p *Player) RenderMiniUpdate() {
 	p.PlayButton.UpdateState()
 }
 
+func (p *Player) UpdateWidgets() {
+	//Slider and PlayButton
+	p.slider.SetTime()
+	p.PlayButton.UpdateState()
+	p.sliderCurrent.SetText(p.timeToString(p.Song.Current))
+	p.sliderEnd.SetText(p.timeToString(p.Song.Length))
+}
+
 //Queue
 func (p *Player) RenderQueue() {//*fyneContainer {
 	
@@ -224,12 +249,6 @@ func (p *Player) RenderQueue() {//*fyneContainer {
 
 	//Utils
 //Player
-func (p *Player) UpdateWidgets() {
-	//Slider and PlayButton
-	p.slider.SetTime()
-	p.PlayButton.UpdateState()
-}
-
 func (p *Player) GetMeta() (*canvas.Image, string) {
 	//Artwork
 	var art *canvas.Image
@@ -281,6 +300,20 @@ func (p *Player) Close() {
 	p.Song.Close()
 	p.slider.Close()
 	p.stopUpdating <- true
+}
+
+func (p *Player) timeToString(time int64) string {
+	min := int(time/60)
+	output := strconv.Itoa(min) + ":"
+	
+	sec := math.Mod(float64(time), 60)
+	if sec < 10 {
+		output += "0" + strconv.Itoa(int(sec))
+	} else {
+		output += strconv.FormatFloat(sec, 'f', 0, 64)
+	}
+	
+	return output
 }
 
 //Queue
