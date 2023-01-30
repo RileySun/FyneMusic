@@ -18,12 +18,15 @@ replace github.com/RileySun/FyneMusic/settings => ./settings
 
 replace github.com/RileySun/FyneMusic/utils => ./utils
 
+replace github.com/RileySun/FyneMusic/tray => ./tray
+
 require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/RileySun/FyneMusic/player v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/playlist v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/settings v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/song v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/utils v0.0.0-00010101000000-000000000000
 )
 
 require (
@@ -31,7 +34,6 @@ require (
 	github.com/RileySun/FyneMusic/meta v0.0.0-00010101000000-000000000000 // indirect
 	github.com/RileySun/FyneMusic/playbutton v0.0.0-00010101000000-000000000000 // indirect
 	github.com/RileySun/FyneMusic/track v0.0.0-00010101000000-000000000000 // indirect
-	github.com/RileySun/FyneMusic/utils v0.0.0-00010101000000-000000000000 // indirect
 	github.com/benoitkugler/textlayout v0.3.0 // indirect
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/dhowden/tag v0.0.0-20220618230019-adf36e896086 // indirect

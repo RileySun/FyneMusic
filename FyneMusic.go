@@ -6,9 +6,11 @@ import (
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
 	
+	"github.com/RileySun/FyneMusic/song"
+	"github.com/RileySun/FyneMusic/tray"
+	"github.com/RileySun/FyneMusic/utils"
 	"github.com/RileySun/FyneMusic/player"
 	"github.com/RileySun/FyneMusic/playlist"
-	"github.com/RileySun/FyneMusic/song"
 	"github.com/RileySun/FyneMusic/settings"
 )
 
@@ -17,6 +19,7 @@ var window fyne.Window
 var config *settings.Config
 var playList *playlist.Playlist
 var playerObj *player.Player
+var systemTray *tray.Tray
 
 //Init
 func init() {
@@ -26,18 +29,29 @@ func init() {
 func setup() {
 	fyneApp = app.NewWithID("com.sunshine.fynemusic")
 	
+	//Config
 	settings.LoadSettings(fyneApp)
 	config = settings.GetSettings()
+	
+	//Theme
+	fyneApp.Settings().SetTheme(&utils.NewTheme{})
 	
 	//Player Module (needed for Playlist, must come first)
 	playerObj = player.NewPlayer()
 	playerObj.ReturnToMenu = func() {returnToMenu()}
 	playerObj.ResumeSong = func() {resumeSong()}
+	playerObj.RefreshTray = func() {refreshTray()}
 	
 	//Playlist Module
 	playList = playlist.NewPlaylist(config.Dir, playerObj)
 	playList.Select = func(id int64) {selectSong(id)}
 	playList.Settings = func() {openSettings()}
+	
+	//System Tray Notifications (desktop only, no fyne tray for mobile)
+	device := fyne.CurrentDevice()
+	if !device.IsMobile() {
+		systemTray = tray.NewTray(fyneApp, playerObj)	
+	}
 }
 
 //Main
@@ -66,6 +80,7 @@ func main() {
 	}
 	
 	window.ShowAndRun()
+	window.SetMaster()
 }
 
 //Change Tabs
@@ -96,6 +111,7 @@ func selectSong(index int64) {
 	//Play Selected Song
 	playerObj.Song.Play()
 	playerObj.UpdateWidgets()
+	refreshTray()
 }
 
 func resumeSong() {
@@ -126,5 +142,13 @@ func openSettings() {
 func changeVolume(v float64) {
 	if playerObj.Song != nil {
 		playerObj.Song.Player.SetVolume(v)
+	}
+}
+
+func refreshTray() {
+	//Only if on desktop where tray is supported
+	//Used in player module to refresh system tray on player changes
+	if systemTray != nil {
+		systemTray.Refresh()
 	}
 }

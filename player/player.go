@@ -30,6 +30,7 @@ type Player struct {
 	PlayButton *playbutton.PlayButton
 	ReturnToMenu func()
 	ResumeSong func()
+	RefreshTray func()
 	
 	artContainer *fyne.Container
 	title *widget.Label
@@ -144,12 +145,21 @@ func (p *Player) Render() *fyne.Container {
 	//Top Container
 	topBorder := canvas.NewLine(color.NRGBA{R: 155, G: 155, B: 155, A: 255})
 	topBorder.StrokeWidth = 2
-	topContainer := container.NewBorder(nil, topBorder, nil, nil, backContainer)
+	topBorderContainer := container.NewBorder(nil, topBorder, nil, nil, backContainer)
+	//Label works better as a spacer here than spacer does. weird.
+	labelSpace := widget.NewLabel("")
+	topContainer := container.New(layout.NewVBoxLayout(), topBorderContainer, labelSpace)
 	
 	//Meta
 	artwork, title := p.GetMeta()
 	p.artContainer = container.New(layout.NewMaxLayout(), artwork)
 	
+	//Title (if too long, truncate)
+	titleLen := len([]rune(title))
+	if titleLen > 55 {
+		remove := titleLen - 55
+		title = title[:len(title)-remove] + "..."
+	}
 	p.title = widget.NewLabel(title)
 	p.title.Alignment = 1
 	
@@ -180,7 +190,16 @@ func (p *Player) Render() *fyne.Container {
 func (p *Player) RenderUpdate() {
 	//Meta
 	artwork, title := p.GetMeta()
+	
+	//Title (if too long, truncate)
+	titleLen := len([]rune(title))
+	if titleLen > 55 {
+		remove := titleLen - 55
+		title = title[:len(title)-remove] + "..."
+	}
 	p.title.SetText(title)
+	
+	//Art
 	p.artContainer.RemoveAll()
 	p.artContainer.Add(artwork)
 	artwork.Refresh()
@@ -325,6 +344,7 @@ func (p *Player) newQueueSong(path string) {
 	p.UpdateWidgets()
 	p.RenderUpdate()
 	p.RenderMiniUpdate()
+	p.RefreshTray()
 }
 
 func (p *Player) GetQueueNext() {
