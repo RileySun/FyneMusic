@@ -74,13 +74,14 @@ func main() {
 	window.Resize(fyne.NewSize(400, 600))
 	window.SetFixedSize(true)
 	
+	window.SetMaster()
+	
 	//If setup not done, show settings page
 	if !config.Setup {
 		openSettings()
 	}
 	
 	window.ShowAndRun()
-	window.SetMaster()
 }
 
 //Change Tabs
