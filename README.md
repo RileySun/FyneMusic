@@ -17,7 +17,7 @@ Go Version < 1.16:
 
 
 2. Build App  
-macOS:-  
+macOS:   
 `fyne package -os darwin -icon App_Icon.png`  
 windows:  
 `fyne package -os windows -icon App_Icon.png`  
