@@ -25,7 +25,7 @@ Go Version < 1.16:
 `go get fyne.io/fyne/v2/cmd/fyne`  
 
 
-2. Build App (for cross compiling see [here](https://developer.fyne.io/started/cross-compiling))
+2. Build App (for cross compiling see [here](https://developer.fyne.io/started/cross-compiling))  
 macOS:   
 `fyne package -os darwin -icon App_Icon.png`  
 windows:  
