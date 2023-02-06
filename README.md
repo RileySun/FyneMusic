@@ -4,12 +4,14 @@ A pure golang music player app built off the [Fyne Framework](https://fyne.io/ "
 Currently only supports MP3 format audio files.
 
 ------------
-### Install Instructions
+### Install Instructions  
 
-FyneMusic has pre-built application releases for the following platforms    
-	MacOS: [Download](https://github.com/RileySun/FyneMusic/releases/download/v1.0/FyneMusic.macOS.dmg)  
-	Windows: [Download](https://github.com/RileySun/FyneMusic/releases/download/v1.0/FyneMusic.Windows.zip)
-	Linux: Please build using instructions below
+FyneMusic has pre-built application releases for the following platforms  
+
+MacOS: [Download](https://github.com/RileySun/FyneMusic/releases/download/v1.0/FyneMusic.macOS.dmg)  
+Windows: [Download](https://github.com/RileySun/FyneMusic/releases/download/v1.0/FyneMusic.Windows.zip)  
+Linux: Please build using instructions below  
+
 ------------
 
 ### Build Instructions
