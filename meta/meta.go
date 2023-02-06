@@ -81,7 +81,7 @@ func Get(path string) *Meta {
 	if m.Picture() != nil {
 		meta.Image = m.Picture().Data
 	} else {
-		img := utils.Credit()
+		img := utils.Logo()
 		meta.Image = img.StaticContent
 	}
 	
