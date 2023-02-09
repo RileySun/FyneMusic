@@ -1,6 +1,8 @@
 package tray
 
 import(
+	"log"
+	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/driver/desktop"
 	
@@ -35,7 +37,7 @@ func (t *Tray) NewDesktopTray() {
 	t.Desktop, deskOk = t.App.(desktop.App)
 	
 	if !deskOk {
-		panic("Tray: Desktop Tray Can Not Init")
+		log.Print("tray: Desktop Tray Can Not Init")
 	}
 	
 	//Menu Items

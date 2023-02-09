@@ -1,10 +1,11 @@
 package playlist
 
 import(
-	"path/filepath"
+	"log"
 	"io/fs"
 	"strings"
 	"image/color"
+	"path/filepath"
 	
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/container"
@@ -82,7 +83,7 @@ func GetSongs(dirpath string) []*SongItem {
 	})
 	
 	if walkErr != nil {
-		panic("Playlist: Rescursive Song Get Err:" + walkErr.Error())
+		log.Fatal("playlist: Song Walker - " + walkErr.Error())
 	}
 	
 	return songItems

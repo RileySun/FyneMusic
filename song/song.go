@@ -3,6 +3,7 @@ package song
 import(
 	"io"
 	"os"
+	"log"
 	"time"
 	"strings"
 	
@@ -53,7 +54,7 @@ func NewSong(filepath string) *Song {
 	//Mp3-Decoder
 	decoder, decoderErr := mp3.NewDecoder(currentSong.file)
 	if decoderErr != nil {
-		panic("Can't decode file. Error: " + decoderErr.Error())
+		log.Fatal("song: Can't decode file. Error: " + decoderErr.Error())
 	}
 	
 	currentSong.decoder = decoder
@@ -71,7 +72,7 @@ func NewSong(filepath string) *Song {
 	var contextError error
 	context, ready, contextError = oto.NewContext(currentSong.decoder.SampleRate(), 2, 2)
 	if contextError != nil {
-		panic("Can't create context. Error: " + contextError.Error())
+		log.Fatal("song: Can't create context. Error: " + contextError.Error())
 	}
 	
 	<-ready //context ready channel
@@ -88,7 +89,7 @@ func OpenSongFile(filepath string) *os.File {
 	file, fileErr := os.Open(filepath)
 	
 	if fileErr != nil {
-		panic("Can't open file. Error: " + fileErr.Error())
+		log.Fatal("song: Can't open file. Error: " + fileErr.Error())
 	}
 	
 	return file
@@ -203,12 +204,12 @@ func (s *Song) Forward() {
 func (s *Song) Close() {
 	playerError := s.Player.Close()
 	if playerError != nil {
-		panic("song.Player.Close failed: " + playerError.Error())
+		log.Print("song: Player.Close failed: " + playerError.Error())
 	}
 	
 	fileError := s.file.Close()
 	if fileError != nil {
-		panic("song.File.Close failed: " + fileError.Error())
+		log.Print("song: File.Close failed: " + fileError.Error())
 	}
 	
 	/*

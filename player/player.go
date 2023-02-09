@@ -162,6 +162,7 @@ func (p *Player) Render() *fyne.Container {
 	}
 	p.title = widget.NewLabel(title)
 	p.title.Alignment = 1
+	p.title.Wrapping = 1
 	
 	//Slider
 	p.sliderCurrent = widget.NewLabel("0:00")
@@ -191,13 +192,14 @@ func (p *Player) RenderUpdate() {
 	//Meta
 	artwork, title := p.GetMeta()
 	
-	//Title (if too long, truncate)
+	//Title (if too long, truncate) ((*widget.Label).TextWrap also truncates, not sure if I wanna do it that way.)
 	titleLen := len([]rune(title))
 	if titleLen > 55 {
 		remove := titleLen - 55
 		title = title[:len(title)-remove] + "..."
 	}
 	p.title.SetText(title)
+	p.title.Wrapping = 1
 	
 	//Art
 	p.artContainer.RemoveAll()

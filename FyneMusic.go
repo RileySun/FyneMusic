@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -28,9 +29,10 @@ func init() {
 
 func setup() {
 	fyneApp = app.NewWithID("com.sunshine.fynemusic")
+	window = fyneApp.NewWindow("FyneMusic")
 	
-	//Config
-	settings.LoadSettings(fyneApp)
+	//Config(need fyneApp & window for Prefrences api, and copying to clipboard)
+	settings.LoadSettings(fyneApp, window)
 	config = settings.GetSettings()
 	
 	//Theme
@@ -57,7 +59,6 @@ func setup() {
 //Main
 func main() {
 	setup()
-	window = fyneApp.NewWindow("FyneMusic")
 	
 	//Settings window
 	settings.ParentWindow = window
@@ -100,7 +101,7 @@ func selectSong(index int64) {
 	//Get New Queue based off selected song (index)
 	playerObj.NewQueue(playList.PlaylistPaths(), index)
 	if playerObj.Queue == nil {
-		panic("Queue Error")
+		log.Fatal("Failed to create player queue")
 	}
 	
 	playerObj.Song = song.NewSong(playerObj.Queue.Songs[playerObj.Queue.Index])

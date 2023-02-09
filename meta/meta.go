@@ -2,6 +2,7 @@ package meta
 
 import(
 	"os"
+	"log"
 	"strconv"
 	
 	"github.com/dhowden/tag"
@@ -27,13 +28,13 @@ func Get(path string) *Meta {
 	meta.File = s.Name()
 	meta.Size = s.Size()
 	if statErr != nil {
-		panic("meta:" + statErr.Error())
+		log.Print("meta:" + statErr.Error())
 	}
 	
 	newFile, fileErr := os.Open(path)
 	defer newFile.Close()
 	if fileErr != nil {
-		panic("meta:" + fileErr.Error())
+		log.Print("meta:" + fileErr.Error())
 	}
 
 	//Get file tags
@@ -41,12 +42,9 @@ func Get(path string) *Meta {
 	
 	//If no tags, return stat info
 	if tagErr != nil {
-		//panic("Error TagErr:" + tagErr.Error())
 		meta.Title = s.Name()
 		return meta
 	}
-	
-	//Else fill in tag meta
 	
 	//Title
 	if m.Title() != " " && m.Title() != "" {

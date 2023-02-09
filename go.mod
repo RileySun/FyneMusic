@@ -2,13 +2,31 @@ module github.com/RileySun/FyneMusic
 
 go 1.19
 
+replace github.com/RileySun/FyneMusic/playlist => ./playlist
+
+replace github.com/RileySun/FyneMusic/player => ./player
+
+replace github.com/RileySun/FyneMusic/song => ./song
+
+replace github.com/RileySun/FyneMusic/meta => ./meta
+
+replace github.com/RileySun/FyneMusic/track => ./track
+
+replace github.com/RileySun/FyneMusic/playbutton => ./playbutton
+
+replace github.com/RileySun/FyneMusic/settings => ./settings
+
+replace github.com/RileySun/FyneMusic/utils => ./utils
+
+replace github.com/RileySun/FyneMusic/tray => ./tray
+
 require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/RileySun/FyneMusic/player v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/playlist v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/settings v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/song v0.0.0-00010101000000-000000000000
-	github.com/RileySun/FyneMusic/utils v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/utils v0.0.0-20230206131718-c5561de4159c
 )
 
 require (
