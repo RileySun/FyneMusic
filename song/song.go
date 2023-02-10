@@ -79,7 +79,13 @@ func NewSong(filepath string) *Song {
 	
 	//New Player
 	currentSong.Player = context.NewPlayer(currentSong.decoder)
-	currentSong.Player.SetVolume(config.Volume)
+	
+	//In case config is missing
+	if config != nil {
+		currentSong.Player.SetVolume(config.Volume)
+	} else {
+		currentSong.Player.SetVolume(0.5)
+	}
 	
 	return currentSong
 }
@@ -175,6 +181,7 @@ func (s *Song) Seek(newSeek int64) {
 	s.endUpdate()
 	newIO := newSeek * int64(s.decoder.SampleRate()) * 4 //Sample size is 4
 	_, _ = s.Player.(io.Seeker).Seek(newIO, io.SeekStart)
+	s.Current = newSeek
 	s.startUpdate()
 }
 

@@ -54,8 +54,8 @@ func (t *Tray) NewDesktopTray() {
 	
 	
 	t.Menu = fyne.NewMenu("Fyne Music", t.Current, prev, t.PlayItem, next)
-	t.Desktop.SetSystemTrayIcon(utils.Credit())
-	t.Desktop.SetSystemTrayMenu(t.Menu)
+	t.Desktop.SetSystemTrayIcon(utils.Logo())
+	//t.Desktop.SetSystemTrayMenu(t.Menu)
 }
 
 //Utils
@@ -81,11 +81,6 @@ func (t *Tray) Refresh() {
 	//Update Everything
 	t.Player.UpdateWidgets()
 	t.Menu.Refresh()
-}
-
-func (t *Tray) Close() {
-	
-	//t.Desktop.SetSystemTrayMenu(nil)
 }
 
 //Actions

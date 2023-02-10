@@ -99,7 +99,6 @@ func Render() *fyne.Container {
 	
 	//Music Dir
 	dirLabel := widget.NewLabel("Music Directory")
-	dirLabel.Alignment = 1 //Center
 	dirLocation = widget.NewEntry()
 	dirLocation.Text = config.Dir
 	button := widget.NewButtonWithIcon("", utils.Icons.Folder, func() {selectMusicDir()})
@@ -115,11 +114,10 @@ func Render() *fyne.Container {
 	volume.Value = config.Volume
 	
 	//Log Dir
-	logLabel := widget.NewLabel("Log Path: " + config.Log)
-	logLabel.Alignment = 1 //Center
-	logLabel.Wrapping = 1
+	logLabel := widget.NewLabel("Log Path:")
+	logScroll := container.NewHScroll(widget.NewLabel(config.Log))
 	logButton := widget.NewButtonWithIcon("", utils.Icons.Copy, func() {copyLogDir()})
-	logContainer := container.NewBorder(nil, nil, nil, logButton, logLabel)
+	logContainer := container.NewBorder(nil, nil, logLabel, logButton, logScroll)
 	
 	//Credit
 	creditIMG := canvas.NewImageFromResource(utils.Credit())

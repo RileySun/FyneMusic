@@ -24,7 +24,7 @@ require (
 	fyne.io/fyne/v2 v2.3.0
 	github.com/RileySun/FyneMusic/player v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/playlist v0.0.0-00010101000000-000000000000
-	github.com/RileySun/FyneMusic/settings v0.0.0-00010101000000-000000000000
+	github.com/RileySun/FyneMusic/settings v0.0.0-20230209141949-4e7cbe3f5cea
 	github.com/RileySun/FyneMusic/song v0.0.0-00010101000000-000000000000
 	github.com/RileySun/FyneMusic/utils v0.0.0-20230206131718-c5561de4159c
 )
@@ -54,7 +54,7 @@ require (
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/srwiley/oksvg v0.0.0-20220731023508-a61f04f16b76 // indirect
 	github.com/srwiley/rasterx v0.0.0-20210519020934-456a8d69b780 // indirect
-	github.com/stretchr/testify v1.8.0 // indirect
+	github.com/stretchr/testify v1.8.1 // indirect
 	github.com/tevino/abool v1.2.0 // indirect
 	github.com/yuin/goldmark v1.4.0 // indirect
 	golang.org/x/image v0.0.0-20220601225756-64ec528b34cd // indirect
